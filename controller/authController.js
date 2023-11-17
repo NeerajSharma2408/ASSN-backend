@@ -1,10 +1,12 @@
-const jwt = require('jsonwebtoken');
+const createToken = require("../middleware/jwtAuth")
 const User = require("../model/User");
 
-const createToken = (_id)=>{
-    console.log('id',_id)
-    console.log('jwt secret',process.env.JWT_SECRET)
-    return jwt.sign({_id}, process.env.JWT_SECRET, { expiresIn: '3d' })
+const email = async (req, res) => {
+  res.status(200).json({message: "EMAIL ROUTE"})
+}
+
+const otp = async (req, res) => {
+  res.status(200).json({message: "OTP ROUTE"})
 }
 
 // TO BE CHANGED
@@ -25,7 +27,7 @@ const signup = async (req, res) => {
 // TO BE CHANGED
 const login = async (req, res) => {
   console.log('login')
-  const { Email, Password} = req.body;
+  const { Email, Password } = req.body;
   console.log(req.body)
   try {
     const user = await User.login(Email, Password);
@@ -37,4 +39,4 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { login, signup };
+module.exports = { login, signup, email, otp };
