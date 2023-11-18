@@ -1,10 +1,10 @@
-const { createToken } = require("../middleware/jwtAuth")
-const { getHash, verifyHash } = require('../middleware/bcryptHash')
-const mailHandler = require('../middleware/mail');
-const { writeHandler, authHandler } = require('../middleware/otp')
-const cryptoHash = require("../middleware/cryptoHash");
+const { getHash, verifyHash } = require('../utils/bcryptHash')
+const mailHandler = require('../utils/mail');
+const { writeHandler, authHandler } = require('../utils/otp')
+const cryptoHash = require("../utils/cryptoHash");
 
 const User = require("../model/User");
+const JWT = require("../model/JWT");
 
 const mailController = async (req, res) => {
 
@@ -75,8 +75,8 @@ const usernameController = async function (req, res) {
           userCreated: 'true',
           message: "User Created succesfully"
         }
-        const token = createToken(user._id);
-        res.status(200).json({responseData, token});
+        JWT.create(user._id)
+        res.status(200).json(responseData);
       } else {
         res.status(500).json({ userCreated: 'false', message: "Unable to Create a new user" });
       }
@@ -107,8 +107,16 @@ const login = async function (req,res){
               //     friends: user.Friends,
               //     message: "Successfully Logged In"
               // }
-              const token = createToken(user._id)
-              res.status(200).json({user, token})
+
+              res.status(200).json(user)
+              // MOST PROBABLY CREATE A NEW UTIL FILES FOR JWT OPERATIONS
+              
+              // JWT.create(user._id).then((jwt)=>{
+              //   console.log(jwt)
+              //   res.status(200).json(user)
+              // }).catch((err)=>{
+              //   res.status(500).json({message: `"INTERNAL SERVER ERROR" ${err}`})
+              // })
           }
           else{
               res.status(400).json({message: "Incorrect password" })
@@ -122,13 +130,15 @@ const login = async function (req,res){
   }
 }
 
-// IMPLEMENT
-// sirf id store karni hai?
-// logout kaise karna hai?
-// routes secure kaise karne hai?
-
 const logout = async function (req, res){
-  res.status(200).json({message: " Logged out successfully"})
+  req.session.destroy(function(err) {
+    if(err){
+        console.log("session error: ", err)
+        res.status(500).json({message: "INTERNAL SERVER ERROR"})
+    }else{
+        res.status(200).json({message: "SESSION DESTROYED"})
+    }
+})
 }
 
 module.exports = { mailController, usernameController, login, logout };

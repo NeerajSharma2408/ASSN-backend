@@ -5,7 +5,6 @@ const Schema = mongoose.Schema;
 const UserSchema = new Schema({
   Name: {
     type: String,
-    // required: true,
   },
   Username: {
     type: String,
@@ -32,7 +31,6 @@ const UserSchema = new Schema({
       "Female",
       "Others"
     ],
-    // required: true,
   },
   Avatar: {
     type: String,
