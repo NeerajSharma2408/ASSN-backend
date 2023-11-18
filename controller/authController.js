@@ -1,11 +1,10 @@
-const argon2 = require('argon2');
-
 const createToken = require("../middleware/jwtAuth")
-
-const User = require("../model/User");
-
+const { getHash, verifyHash } = require('../middleware/bcryptHash')
 const mailHandler = require('../middleware/mail');
 const { writeHandler, authHandler } = require('../middleware/otp')
+const cryptoHash = require("../middleware/cryptoHash");
+
+const User = require("../model/User");
 
 const mailController = async (req, res) => {
 
@@ -57,14 +56,14 @@ const usernameController = async function (req, res) {
     res.status(400).json({ message: "Username taken" })
   } else {
     try {
-      const hash = email.split('@')[1];
-      const pass = await argon2.hash(password);
+      const hashString = cryptoHash(email.split('@')[1]);
+      const pass = await getHash(password);
 
       const userData = {
-        username,
-        email,
-        password: pass.toString(),
-        community: hash.toString()
+        Username: username,
+        Email: email,
+        Password: pass,
+        Community: hashString
       }
 
       const user = await User.create(userData);
@@ -77,12 +76,12 @@ const usernameController = async function (req, res) {
           message: "User Created succesfully"
         }
         const token = createToken(user._id);
-        res.status(200).json(responseData, token);
+        res.status(200).json({responseData, token});
       } else {
         res.status(500).json({ userCreated: 'false', message: "Unable to Create a new user" });
       }
     } catch (err) {
-      console.log("argon2 error: ", err)
+      console.log("Signup Username Error: ", err)
       res.status(500).json({ message: "Internal Server error( Unable to make a Community )" })
     }
   }
@@ -94,27 +93,28 @@ const login = async function (req,res){
 
   // HERE WE ARE CHECKING IF THE GIVEN CREDENTIALS MATCH IN THE ONE IN DB
   try {
-      const user = await User.findOne({$or: [{email: userOrMail}, {username: userOrMail}]})
+      const user = await User.findOne({$or: [{Email: userOrMail}, {Username: userOrMail}]})
       if(user){
-          const auth = await argon2.verify(user.password, pass)
+          const auth = await verifyHash(user.Password, pass)
           if(auth){
-              const responseData = {
-                  id: user._id,
-                  name: user.name,
-                  username: user.username,
-                  email: user.email,
-                  community: user.community,
-                  bio: user.bio,
-                  friends: user.friends,
-                  message: "Successfully Logged In"
-              }
-              res.status(200).json(responseData)
+              // const responseData = {
+              //     id: user._id,
+              //     name: user.Name,
+              //     username: user.Username,
+              //     email: user.Email,
+              //     community: user.Community,
+              //     bio: user.Bio,
+              //     friends: user.Friends,
+              //     message: "Successfully Logged In"
+              // }
+              const token = createToken(user._id)
+              res.status(200).json({user, token})
           }
           else{
               res.status(400).json({message: "Incorrect password" })
           }
       }else{
-          res.status(400).json({message: "Incorrect user name" });
+          res.status(400).json({message: "User not Found" });
       }
   } catch (error) {
       console.log("Login Error: ",  error)

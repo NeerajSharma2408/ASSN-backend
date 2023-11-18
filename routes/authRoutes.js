@@ -1,9 +1,10 @@
-const router = require('express').Router();
+const authRoutes = require('express').Router();
 const { mailController, usernameController, login } = require('../controller/authController');
 
-router.post(['signup/email', 'signup/otp'], mailController);
-router.post('signup/createuser', usernameController);
+authRoutes.post('/signup/email', mailController);
+authRoutes.post('/signup/otp', mailController);
+authRoutes.post('/signup/createuser', usernameController);
 
-router.post('login', login);
+authRoutes.post('/login', login);
 
-module.exports = router
+module.exports = authRoutes

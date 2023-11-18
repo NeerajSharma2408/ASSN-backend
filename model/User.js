@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
-const bcrypt = require("bcrypt");
+// const bcrypt = require("bcrypt");
 const Schema = mongoose.Schema;
 
 const UserSchema = new Schema({
   Name: {
     type: String,
-    required: true,
+    // required: true,
   },
   Username: {
     type: String,
@@ -32,7 +32,7 @@ const UserSchema = new Schema({
       "Female",
       "Others"
     ],
-    required: true,
+    // required: true,
   },
   Avatar: {
     type: String,
@@ -90,16 +90,16 @@ UserSchema.index({community: 1, username: 1})
 //   return user;
 // };
 
-UserSchema.statics.login = async function (Email, Password) {
-  const user = await this.findOne({ Email });
-  if (!user) {
-    throw Error("Account does not exists.");
-  }
-  const match = await bcrypt.compare(Password, user.Password);
-  if (!match) {
-    throw Error("Invalid credentials.");
-  }
-  return user;
-};
+// UserSchema.statics.login = async function (Email, Password) {
+//   const user = await this.findOne({ Email });
+//   if (!user) {
+//     throw Error("Account does not exists.");
+//   }
+//   const match = await bcrypt.compare(Password, user.Password);
+//   if (!match) {
+//     throw Error("Invalid credentials.");
+//   }
+//   return user;
+// };
 
 module.exports = mongoose.model("User", UserSchema);
