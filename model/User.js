@@ -73,22 +73,22 @@ const UserSchema = new Schema({
 UserSchema.index({community: 1, username: 1})
 
 // probably have to be changed beacuse signup is not 1 single api call
-UserSchema.statics.signup = async function (Name, Email, PhoneNumber, Password,){
-  const exists = await this.findOne({ Email });
-  if (exists) {
-    throw new Error("Email already in use");
-  }
+// UserSchema.statics.signup = async function (Name, Email, PhoneNumber, Password,){
+//   const exists = await this.findOne({ Email });
+//   if (exists) {
+//     throw new Error("Email already in use");
+//   }
 
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(Password, salt);
-  const user = await this.create({
-    Name,
-    Email,
-    PhoneNumber,
-    Password: hashedPassword,
-  });
-  return user;
-};
+//   const salt = await bcrypt.genSalt(10);
+//   const hashedPassword = await bcrypt.hash(Password, salt);
+//   const user = await this.create({
+//     Name,
+//     Email,
+//     PhoneNumber,
+//     Password: hashedPassword,
+//   });
+//   return user;
+// };
 
 UserSchema.statics.login = async function (Email, Password) {
   const user = await this.findOne({ Email });
