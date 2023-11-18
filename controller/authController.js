@@ -1,4 +1,4 @@
-const createToken = require("../middleware/jwtAuth")
+const { createToken } = require("../middleware/jwtAuth")
 const { getHash, verifyHash } = require('../middleware/bcryptHash')
 const mailHandler = require('../middleware/mail');
 const { writeHandler, authHandler } = require('../middleware/otp')
@@ -122,4 +122,13 @@ const login = async function (req,res){
   }
 }
 
-module.exports = { mailController, usernameController, login };
+// IMPLEMENT
+// sirf id store karni hai?
+// logout kaise karna hai?
+// routes secure kaise karne hai?
+
+const logout = async function (req, res){
+  res.status(200).json({message: " Logged out successfully"})
+}
+
+module.exports = { mailController, usernameController, login, logout };
