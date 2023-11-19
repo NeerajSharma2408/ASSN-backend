@@ -1,5 +1,6 @@
 const express = require('express')
 const cors = require('cors')
+const session = require('express-session')
 
 const connectDB = require('./utils/connect_db');
 const authRoutes = require('./routes/authRoutes')
@@ -12,6 +13,12 @@ const app = express();
 app.use(express.json())
 app.use(express.urlencoded( { extended: true } ))
 app.use('/', cors())
+
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+}));
 
 // * important
 // ! deprecated

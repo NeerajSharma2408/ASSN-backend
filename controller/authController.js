@@ -2,9 +2,9 @@ const { getHash, verifyHash } = require('../utils/bcryptHash')
 const mailHandler = require('../utils/mail');
 const { writeHandler, authHandler } = require('../utils/otp')
 const cryptoHash = require("../utils/cryptoHash");
+const { createToken, deleteToken } = require('../utils/jwt');
 
 const User = require("../model/User");
-const JWT = require("../model/JWT");
 
 const mailController = async (req, res) => {
 
@@ -49,7 +49,7 @@ const usernameController = async function (req, res) {
   const { email, password, username } = req.body;
 
   const userId = await User.exists({
-    $or: [{ username }, { email }]
+    $or: [{ Username: username }, { Email: email }]
   })
 
   if (userId) {
@@ -69,14 +69,25 @@ const usernameController = async function (req, res) {
       const user = await User.create(userData);
 
       if (user.id) {
-        const responseData = {
-          id: user.id,
-          username: user.username,
-          userCreated: 'true',
-          message: "User Created succesfully"
+        // const responseData = {
+        //   id: user.id,
+        //   username: user.username,
+        //   userCreated: 'true',
+        //   message: "User Created succesfully"
+        // }
+
+        const response = await createToken(user._id)
+        console.log("token response: ", response)
+        if (response) {
+          req.session.userID = user._id
+          req.session.loggedIn = true
+
+          user['Password'] = "PASSWORD WONT BE DISCLOSED"
+          res.status(200).json(user)
+        } else {
+          res.status(500).json({ message: "Unable to create Token" })
         }
-        JWT.create(user._id)
-        res.status(200).json(responseData);
+
       } else {
         res.status(500).json({ userCreated: 'false', message: "Unable to Create a new user" });
       }
@@ -87,58 +98,67 @@ const usernameController = async function (req, res) {
   }
 }
 
-const login = async function (req,res){
+const login = async function (req, res) {
   const userOrMail = req.body.username;
   const pass = req.body.password;
 
   // HERE WE ARE CHECKING IF THE GIVEN CREDENTIALS MATCH IN THE ONE IN DB
   try {
-      const user = await User.findOne({$or: [{Email: userOrMail}, {Username: userOrMail}]})
-      if(user){
-          const auth = await verifyHash(user.Password, pass)
-          if(auth){
-              // const responseData = {
-              //     id: user._id,
-              //     name: user.Name,
-              //     username: user.Username,
-              //     email: user.Email,
-              //     community: user.Community,
-              //     bio: user.Bio,
-              //     friends: user.Friends,
-              //     message: "Successfully Logged In"
-              // }
+    let user = await User.findOne({ $or: [{ Email: userOrMail }, { Username: userOrMail }] })
+    if (user) {
+      const auth = await verifyHash(user.Password, pass)
+      if (auth) {
+        // const responseData = {
+        //     id: user._id,
+        //     name: user.Name,
+        //     username: user.Username,
+        //     email: user.Email,
+        //     community: user.Community,
+        //     bio: user.Bio,
+        //     friends: user.Friends,
+        //     message: "Successfully Logged In"
+        // }
 
-              res.status(200).json(user)
-              // MOST PROBABLY CREATE A NEW UTIL FILES FOR JWT OPERATIONS
-              
-              // JWT.create(user._id).then((jwt)=>{
-              //   console.log(jwt)
-              //   res.status(200).json(user)
-              // }).catch((err)=>{
-              //   res.status(500).json({message: `"INTERNAL SERVER ERROR" ${err}`})
-              // })
-          }
-          else{
-              res.status(400).json({message: "Incorrect password" })
-          }
-      }else{
-          res.status(400).json({message: "User not Found" });
+        const response = await createToken(user._id)
+        console.log("token response: ", response)
+        if (response) {
+          req.session.userID = user._id
+          req.session.loggedIn = true
+
+          user['Password'] = "PASSWORD WONT BE DISCLOSED"
+          res.status(200).json(user)
+        } else {
+          res.status(500).json({ message: "Unable to create Token" })
+        }
       }
+      else {
+        res.status(400).json({ message: "Incorrect password" })
+      }
+    } else {
+      res.status(400).json({ message: "User not Found" });
+    }
   } catch (error) {
-      console.log("Login Error: ",  error)
-      res.status(500).json({message: "Internal server error"})
+    console.log("Login Error: ", error)
+    res.status(500).json({ message: "Internal server error" })
   }
 }
 
-const logout = async function (req, res){
-  req.session.destroy(function(err) {
-    if(err){
+const logout = async function (req, res) {
+
+  const id = req.session.userID ? req.session.userID : req.id
+  if (!id) {
+    res.status(400).json({ message: "ID neither present in session nor in body" })
+  } else {
+    deleteToken(id)
+    req.session.destroy(function (err) {
+      if (err) {
         console.log("session error: ", err)
-        res.status(500).json({message: "INTERNAL SERVER ERROR"})
-    }else{
-        res.status(200).json({message: "SESSION DESTROYED"})
-    }
-})
+        res.status(500).json({ message: "INTERNAL SERVER ERROR" })
+      } else {
+        res.status(200).json({ message: "SESSION DESTROYED" })
+      }
+    })
+  }
 }
 
 module.exports = { mailController, usernameController, login, logout };
