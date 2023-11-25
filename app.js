@@ -3,7 +3,10 @@ const cors = require('cors')
 const session = require('express-session')
 
 const connectDB = require('./utils/connect_db');
-const authRoutes = require('./routes/authRoutes')
+const authRoutes = require('./routes/authRoutes');
+const userRouter = require('./routes/userRoutes');
+
+const sessionAuth = require('./middleware/sessionAuth');
 
 require('dotenv').config();
 
@@ -27,11 +30,7 @@ app.use(session({
 
 // API ROUTES
 app.use('/api/auth/', authRoutes);
-// app.post("/api/auth/signup/email", (req,res)=>{
-//      console.log(req.body)
-//      res.status(200).json({message: "THIS IS A MESSGAE"})
-// })
-
+app.use('/api/:username/', sessionAuth, userRouter);
 
 
 const PORT = process.env.PORT || 3000;

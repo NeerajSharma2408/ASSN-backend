@@ -1,22 +1,23 @@
 const JsonWebToken = require('jsonwebtoken');
 const JWT = require('../model/JWT')
 
-const createToken = async function (id) {
+const createToken = async function (id, username) {
     try {
         let jwt = await JWT.findOne({ UserID: id })
-        const Token = JsonWebToken.sign({ id }, process.env.JWT_SECRET, { expiresIn: '1d' })
+        const Token = JsonWebToken.sign({ id, username }, process.env.JWT_SECRET, { expiresIn: '1d' })
         if (jwt) {
             jwt = await JWT.findOneAndUpdate({ UserID: id}, { $set: { Token: Token }})
-            return "TOKEN UPDATED"
+            return {result: true, message: "TOKEN UPDATED"}
         }else{
             const userData = { UserID: id, Token: Token }
             jwt = await JWT.create(userData);
             console.log(jwt)
-    
-            return "TOKEN CREATED"
+            
+            return {result: true, message: "TOKEN CREATED"}
         }
     } catch (error) {
         console.log("Create Error: ", error)
+        return {result: false, message: "TOKEN COULDN'T BE CREATED"}
     }
 }
 

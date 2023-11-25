@@ -2,6 +2,8 @@ const { verifyToken } = require('../utils/jwt');
 const { ObjectId } = require('mongoose').Types
 
 const sessionAuth = async (req, res, next)=>{
+    const { username } = req.params
+    req.username = username
     const id = new ObjectId(req.session.userID)
     if(!id){
         res.status(400).json({message: "Session not present"})

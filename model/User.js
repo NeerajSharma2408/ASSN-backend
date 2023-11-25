@@ -45,7 +45,10 @@ const UserSchema = new Schema({
     required: true,
   },
   Friends: {
-    type: [Schema.Types.ObjectId],
+    type: [{
+      'id': Schema.Types.ObjectId,
+      'username': String
+    }],
     default: [],
   },
   Likes: {
@@ -63,6 +66,10 @@ const UserSchema = new Schema({
   Groups: {
     type: [Schema.Types.ObjectId],
     default: [],
+  },
+  isPrivateAccount: {
+    type: Boolean,
+    default: false,
   },
 }, {
   timestamps: true
