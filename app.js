@@ -7,6 +7,7 @@ const authRoutes = require('./routes/authRoutes');
 const userRouter = require('./routes/userRoutes');
 
 const sessionAuth = require('./middleware/sessionAuth');
+const { errorHandler } = require('./middleware/errorHandler');
 
 require('dotenv').config();
 
@@ -28,10 +29,15 @@ app.use(session({
 // ? query
 // todo
 
-// API ROUTES
-app.use('/api/auth/', authRoutes);
-app.use('/api/:username/', sessionAuth, userRouter);
 
+
+// API ROUTES
+app.use('/api/auth/', authRoutes); // Authentication Routes
+app.use('/api/:username/', sessionAuth, userRouter); // User Routes
+
+
+// middleware for handling asynchronous and synchronus errors
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3000;
 const DB_URL = process.env.DB_URL
