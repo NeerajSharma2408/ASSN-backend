@@ -6,51 +6,51 @@ const { createToken, deleteToken } = require('../utils/jwt');
 
 const User = require("../model/User");
 
-const mailGenerator = async function(email){
-  const otp = (Math.round(Math.random() * (1000000 - 100000 - 1)) + 100000);
+// const mailGenerator = async function(email){
+//   const otp = (Math.round(Math.random() * (1000000 - 100000 - 1)) + 100000);
 
-    try {
-      const info = await mailHandler(email, otp);
-      await writeHandler(email, otp, info.messageId);
+//     try {
+//       const info = await mailHandler(email, otp);
+//       await writeHandler(email, otp, info.messageId);
 
-      if (info.messageId) {
-        return res.status(200).json({ mailSent: 'true', message: "Mail Sent Successfully" })
-      } else {
-        return res.status(400).json({ mailSent: 'false', message: "There Occured an Error... Try Again" })
-      }
-    } catch (error) {
-      console.log("Mail Sending error: ", error)
-      return res.status(500).json({ mailSent: 'false', message: "Internal Server Error" })
-    }
-}
+//       if (info.messageId) {
+//         return res.status(200).json({ mailSent: 'true', message: "Mail Sent Successfully" })
+//       } else {
+//         return res.status(400).json({ mailSent: 'false', message: "There Occured an Error... Try Again" })
+//       }
+//     } catch (error) {
+//       console.log("Mail Sending error: ", error)
+//       return res.status(500).json({ mailSent: 'false', message: "Internal Server Error" })
+//     }
+// }
 
-const otpChecker = async function(otp){
-  try {
-    const authData = await authHandler(email, otp);
+// const otpChecker = async function(otp){
+//   try {
+//     const authData = await authHandler(email, otp);
 
-    if (authData.confirmed) {
-      return res.status(200).json({ otpConfirmed: 'true', message: authData.msg });
-    } else {
-      return res.status(400).json({ otpConfirmed: 'false', message: "otp is invalid" })
-    }
-  } catch (error) {
-    console.log("OTP Sending error: ", error)
-    return res.status(500).json({ otpConfirmed: 'false', message: "Internal Server Error" })
-  }
-}
+//     if (authData.confirmed) {
+//       return res.status(200).json({ otpConfirmed: 'true', message: authData.msg });
+//     } else {
+//       return res.status(400).json({ otpConfirmed: 'false', message: "otp is invalid" })
+//     }
+//   } catch (error) {
+//     console.log("OTP Sending error: ", error)
+//     return res.status(500).json({ otpConfirmed: 'false', message: "Internal Server Error" })
+//   }
+// }
 
-const resetPassword = async function(email, password){
-  try {
-    const pass = getHash(password)
-      const user = await User.findOneAndUpdate({Email: email}, {$set: {Password: pass}})
-      user.Password = "PASSWORD WONT BE DISCLOSED"
-      return res.status(200).json({passwordResetSuccess: true, user})
+// const resetPassword = async function(email, password){
+//   try {
+//     const pass = getHash(password)
+//       const user = await User.findOneAndUpdate({Email: email}, {$set: {Password: pass}})
+//       user.Password = "PASSWORD WONT BE DISCLOSED"
+//       return res.status(200).json({passwordResetSuccess: true, user})
 
-  } catch (error) {
-    console.log("Password Reset Error: ", error)
-    return res.status(500).json({passwordResetSuccess: false, message: "Internal Server Error"})
-  }
-}
+//   } catch (error) {
+//     console.log("Password Reset Error: ", error)
+//     return res.status(500).json({passwordResetSuccess: false, message: "Internal Server Error"})
+//   }
+// }
 
 const mailController = async (req, res) => {
 
@@ -260,6 +260,7 @@ const resetpass = async function (req, res) {
 
   }
 }
+
 const logout = async function (req, res) {
 
   const id = req.session.userID ? req.session.userID : req.id
