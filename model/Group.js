@@ -9,13 +9,9 @@ const GroupSchema = new Schema({
             ref: 'User',
         }],
         required: true,
-    },
-    Messages: {
-        type: [{
-            type: mongoose.SchemaTypes.ObjectId,
-            ref: 'Message',
-        }],
-        deafult: []
+        validate: function () {
+            return (this.Members.length <= 128);
+        },
     },
     Muted: {
         type: Number,

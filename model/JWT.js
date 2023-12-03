@@ -7,7 +7,8 @@ const JwtSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         unique: true,
         required: true,
-        index: true
+        index: true,
+        ref: 'User',
     },
     Token: {
         type: String,

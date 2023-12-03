@@ -36,6 +36,11 @@ const MessageSchema = new Schema({
         }],
         deafult: [],
     },
+    InGroup: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'Group',
+        required: true,
+    },
 },{
     timestamps: true,
 });

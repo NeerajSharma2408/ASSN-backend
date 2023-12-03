@@ -46,37 +46,6 @@ const UserSchema = new Schema({
     type: String,
     required: true,
   },
-  Friends: {
-    type: [{
-      'id': {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: 'User',
-      },
-      'username': String
-    }],
-    default: [],
-  },
-  Likes: {
-    type: [{
-      type: mongoose.SchemaTypes.ObjectId,
-      ref: 'Reaction',
-    }],
-    default: [],
-  },
-  Posts: {
-    type: [{
-      type: mongoose.SchemaTypes.ObjectId,
-      ref: 'Post',
-    }],
-    default: [],
-  },
-  Comments: {
-    type: [{
-      type: mongoose.SchemaTypes.ObjectId,
-      ref: 'Comment',
-    }],
-    default: [],
-  },
   Groups: {
     type: [{
       type: mongoose.SchemaTypes.ObjectId,

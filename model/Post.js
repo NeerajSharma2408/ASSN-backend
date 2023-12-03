@@ -7,7 +7,7 @@ const PostSchema = new Schema({
         type: String,
         max: 255,
     },
-    User: {
+    By: {
         type: mongoose.SchemaTypes.ObjectId,
         required: true,
         ref: 'User',
@@ -24,17 +24,6 @@ const PostSchema = new Schema({
     Content: {
         type: String,
         max: 1024,
-    },
-    Likes: {
-        type: [{
-            type: mongoose.SchemaTypes.ObjectId,
-            ref: 'Reaction',
-        }],
-        deafult: [],
-    },
-    Comments: {
-        type: [mongoose.SchemaTypes.ObjectId],
-        default: [],
     },
     Community: {
         type: String,

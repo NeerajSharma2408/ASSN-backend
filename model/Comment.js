@@ -7,7 +7,7 @@ const CommentSchema = new Schema({
         type: mongoose.SchemaTypes.ObjectId,
         ref: 'Post',
     },
-    Creator: {
+    By: {
         type: mongoose.SchemaTypes.ObjectId,
         required: true,
         ref: 'User',
@@ -22,10 +22,6 @@ const CommentSchema = new Schema({
         max: 512,
         required: true,
     },
-    Likes: {
-        type: [mongoose.SchemaTypes.ObjectId],
-        default: [],
-    }
 },{
     timestamps: true,
 });

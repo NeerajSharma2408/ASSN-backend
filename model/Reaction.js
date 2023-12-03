@@ -3,6 +3,11 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ReactionSchema = new Schema({
+    Parent: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: ['Message', 'Post', 'Comment'],
+        required: true,
+    },
     By: {
         type: mongoose.SchemaTypes.ObjectId,
         ref: 'User',
@@ -17,7 +22,7 @@ const ReactionSchema = new Schema({
             'CLAP',
         ],
         deafult: 'THUMBS UP'
-    }
+    },
 },{
     timestamps: true,
 });

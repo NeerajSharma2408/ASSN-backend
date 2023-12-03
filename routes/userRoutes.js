@@ -1,25 +1,17 @@
+const { getUser, searchCommunity, searchFriends } = require('../controller/userController')
+
 const userRouter = require('express').Router()
 
-// here check if the user to be found is the login user or any other user and hence find and return the nessasary details
-// PROFILE PAGE ROUTES
-userRouter.get('/', )
+// SELF PROFILE
+userRouter.get('/', getUser)
 
-// here check if the user's post to be found is the login user or any other user and hence find and return the nessasary details
-// POST DETAILS ROUTE
-userRouter.get('/:postid/', )
+// GET OTHER COMMUNITY USERS PROFILE
+userRouter.get('/:userID', getUser)
 
-// unavailable for users other than the owner
-// POST EDITING ROUTE
-userRouter.patch('/:postid/', )
+// Search Community Users
+userRouter.get('/community/:userName', searchCommunity)
 
-// unavailable for users other than the owner
-// POST DELETE ROUTE
-userRouter.delete('/:postid/', )
-
-// COMMENT CREATE ROUTE
-userRouter.post('/:postid/postcomment', )
-
-// COMMENT DELETE ROUTE
-userRouter.delete('/:postid/:commentid/', )
+// Search User's Friends
+userRouter.get('/friends/:userName', searchFriends)
 
 module.exports = userRouter

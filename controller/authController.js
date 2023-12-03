@@ -116,13 +116,7 @@ const usernameController = async function (req, res) {
       const user = await User.create(userData);
 
       if (user.id) {
-        // const responseData = {
-        //   id: user.id,
-        //   username: user.username,
-        //   userCreated: 'true',
-        //   message: "User Created succesfully"
-        // }
-
+        
         const response = await createToken(user._id, user.Username)
         console.log("token response: ", response.message)
         if (response.result) {
@@ -152,20 +146,10 @@ const login = async function (req, res) {
 
   // HERE WE ARE CHECKING IF THE GIVEN CREDENTIALS MATCH IN THE ONE IN DB
   try {
-    let user = await User.findOne({ $or: [{ Email: userOrMail }, { Username: userOrMail }] })
+    let user = await User.findOne({ $or: [{ Email: userOrMail }, { Username: userOrMail }] }).select('-Password -Email')
     if (user) {
       const auth = await verifyHash(user.Password, pass)
       if (auth) {
-        // const responseData = {
-        //     id: user._id,
-        //     name: user.Name,
-        //     username: user.Username,
-        //     email: user.Email,
-        //     community: user.Community,
-        //     bio: user.Bio,
-        //     friends: user.Friends,
-        //     message: "Successfully Logged In"
-        // }
 
         const response = await createToken(user._id, user.Username)
         console.log("token response: ", response.message)
@@ -175,7 +159,6 @@ const login = async function (req, res) {
           req.session.username = user.Username
           req.session.loggedIn = true
 
-          user['Password'] = "PASSWORD WONT BE DISCLOSED"
           res.status(200).json(user)
         } else {
           res.status(500).json({ message: "Unable to create Token" })
@@ -237,7 +220,7 @@ const resetpass = async function (req, res) {
 
     try {
       const pass = await getHash(password)
-        const user = await User.findOneAndUpdate({Email: email}, {$set: {Password: pass}})
+        const user = await User.findOneAndUpdate({Email: email}, {$set: {Password: pass}}, {new: true, select: '-Password'})
 
         const response = await createToken(user._id, user.Username)
         console.log("token response: ", response.message)
@@ -246,8 +229,7 @@ const resetpass = async function (req, res) {
           req.session.userID = user._id
           req.session.username = user.Username
           req.session.loggedIn = true
-
-          user['Password'] = "PASSWORD WONT BE DISCLOSED"
+          
           res.status(200).json({passwordResetSuccess: true, user})
         } else {
           res.status(500).json({passwordResetSuccess: true, message: "Unable to create Token" })

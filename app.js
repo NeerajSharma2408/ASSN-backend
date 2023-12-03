@@ -8,6 +8,7 @@ const userRouter = require('./routes/userRoutes');
 
 const sessionAuth = require('./middleware/sessionAuth');
 const { errorHandler } = require('./middleware/errorHandler');
+const postRouter = require('./routes/postRoutes');
 
 require('dotenv').config();
 
@@ -33,8 +34,8 @@ app.use(session({
 
 // API ROUTES
 app.use('/api/auth/', authRoutes); // Authentication Routes
-app.use('/api/:username/', sessionAuth, userRouter); // User Routes
-
+app.use('/api/user/', sessionAuth, userRouter); // User Routes
+app.use('/api/post/', sessionAuth, postRouter); // Post Routes
 
 // middleware for handling asynchronous and synchronus errors
 app.use(errorHandler)
