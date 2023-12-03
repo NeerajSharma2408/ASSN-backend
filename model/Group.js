@@ -9,8 +9,11 @@ const GroupSchema = new Schema({
             ref: 'User',
         }],
         required: true,
-        validate: function () {
-            return (this.Members.length <= 128);
+        validate: {
+            validator: function () {
+                return (this.Members.length <= 128);
+            },
+            message: "There can't be more than 128 members in any Room",
         },
     },
     Muted: {
@@ -20,5 +23,7 @@ const GroupSchema = new Schema({
 }, {
     timestamps: true,
 })
+
+GroupSchema.index({"updatedAt": 1}); // Parallely update the Group UpdatedAt field when a msg is sent or arrived
 
 module.exports = mongoose.model('Group', GroupSchema)

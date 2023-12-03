@@ -27,4 +27,6 @@ const ReactionSchema = new Schema({
     timestamps: true,
 });
 
+ReactionSchema.index({Parent: 1})
+
 module.exports = mongoose.Model('Reaction', ReactionSchema)

@@ -26,6 +26,6 @@ const CommentSchema = new Schema({
     timestamps: true,
 });
 
-CommentSchema.index({Post: 1, timestamps: 1})
+CommentSchema.index({Post: 1, timestamps: -1})
 
 module.exports = mongoose.Model('Comment', CommentSchema)

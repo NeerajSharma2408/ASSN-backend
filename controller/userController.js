@@ -29,7 +29,7 @@ const searchFriends = async (req, res)=>{
     const usernameOrName = req.params.userName
     let friends = myCache.get(req.id)
     if(!friends){
-        friends = await Friend.find({$and: [{$or: [{'Requester': req.id}, {'Recipient': req.id}]}, {Status: 3}]})
+        friends = await Friend.find({$and: [{Status: 3}, {$or: [{'Requester': req.id}, {'Recipient': req.id}]}]})
         let matches = friends.map(friend=>{
             return (friend.Recipient).toString() == req.id ? friend.Requester : friend.Recipient;
         })

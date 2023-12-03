@@ -27,4 +27,6 @@ const FriendSchema = new Schema({
     timestamps: true,
 })
 
+FriendSchema.index({Status: 1})
+
 module.exports = mongoose.model('Friend', FriendSchema)
