@@ -25,6 +25,16 @@ const PostSchema = new Schema({
         type: String,
         max: 1024,
     },
+    Impressions: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+    isPrivate: {
+        type: Boolean,
+        default: false,
+        required: true,
+    },
     Community: {
         type: String,
         required: true,
@@ -33,6 +43,6 @@ const PostSchema = new Schema({
     timestamps: true,
 });
 
-PostSchema.index({community: 1, User: 1, timestamps: -1})
+PostSchema.index({community: 1, By: 1, timestamps: -1})
 
-module.exports = mongoose.Model('Post', PostSchema)
+module.exports = mongoose.model('Post', PostSchema)

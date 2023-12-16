@@ -5,8 +5,12 @@ const Schema = mongoose.Schema;
 const ReactionSchema = new Schema({
     Parent: {
         type: mongoose.SchemaTypes.ObjectId,
-        ref: ['Message', 'Post', 'Comment'],
+        refPath: 'onModel',
         required: true,
+    },
+    onModel: {
+      type: String,
+      enum: ['Post', 'Message', 'Comment'],
     },
     By: {
         type: mongoose.SchemaTypes.ObjectId,
@@ -21,7 +25,7 @@ const ReactionSchema = new Schema({
             'ANGRY',
             'CLAP',
         ],
-        deafult: 'THUMBS UP'
+        default: 'THUMBS UP'
     },
 },{
     timestamps: true,
@@ -29,4 +33,4 @@ const ReactionSchema = new Schema({
 
 ReactionSchema.index({Parent: 1})
 
-module.exports = mongoose.Model('Reaction', ReactionSchema)
+module.exports = mongoose.model('Reaction', ReactionSchema)

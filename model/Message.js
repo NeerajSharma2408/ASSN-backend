@@ -47,4 +47,4 @@ const MessageSchema = new Schema({
 
 MessageSchema.index({InGroup: 1, timestamps: -1})
 
-module.exports = mongoose.Model('Message', MessageSchema)
+module.exports = mongoose.model('Message', MessageSchema)

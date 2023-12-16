@@ -2,12 +2,12 @@ const Friend = require("../model/Friend");
 const User = require("../model/User")
 
 const NodeCache = require( "node-cache" );
-const myCache = new NodeCache({ stdTTL: 900, checkperiod: 1000 });
+const myCache = new NodeCache({ stdTTL: 600, checkperiod: 660 });
 
 const getUser = async (req, res)=>{
     let userID = req.params.userID
     if(userID){
-        const communityUser = await User.findById(userID).select('-Email -Password -Groups');
+        let communityUser = await User.findById(userID).select('-Email -Password -Groups');
         if(communityUser){
             const isFriend = await Friend.exist({$or: [{Recipient: req.id}, {Recipient: userID}, {Requester: req.id}, {Requester: userID}]});
             communityUser.isFriend = isFriend
@@ -34,7 +34,7 @@ const searchFriends = async (req, res)=>{
             return (friend.Recipient).toString() == req.id ? friend.Requester : friend.Recipient;
         })
         friends = await User.find({'_id': {$in: matches}}).select('_id Username Name Avatar')
-        myCache.set(req.id, {friends}, 900)
+        myCache.set(req.id, {friends}, 600)
     }
     matches = friends.filter(friend=>{
         return ((friend.Username).includes(usernameOrName)) || ((friend.Name).includes(usernameOrName));
@@ -53,7 +53,7 @@ const searchCommunity = async (req, res)=>{
     let communityMembers = myCache.get(userCommunity)
     if(!communityMembers){
         communityMembers = await User.find({Community: userCommunity}).select('_id Username Name Avatar')
-        myCache.set(userCommunity, {communityMembers}, 900)
+        myCache.set(userCommunity, {communityMembers}, 600)
     }
     const matches = communityMembers.filter(communityMember=>{
         return ((communityMember.Username).includes(usernameOrName)) || ((communityMember.Name).includes(usernameOrName));
