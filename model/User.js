@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 const UserSchema = new Schema({
   Name: {
     type: String,
+    default: '',
   },
   Username: {
     type: String,
@@ -61,6 +62,6 @@ const UserSchema = new Schema({
   timestamps: true
 });
 
-UserSchema.index({community: 1, username: 1})
+UserSchema.index({Community: 1, Username: 1})
 
 module.exports = mongoose.model("User", UserSchema);

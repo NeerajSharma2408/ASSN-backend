@@ -64,13 +64,13 @@ const mailController = async (req, res) => {
       await writeHandler(email, otp, info.messageId);
 
       if (info.messageId) {
-        return res.status(200).json({ mailSent: 'true', message: "Mail Sent Successfully" })
+        return res.status(200).json({ mailSent: true, message: "Mail Sent Successfully" })
       } else {
-        return res.status(400).json({ mailSent: 'false', message: "There Occured an Error... Try Again" })
+        return res.status(400).json({ mailSent: false, message: "There Occured an Error... Try Again" })
       }
     } catch (error) {
       console.log("Mail Sending error: ", error)
-      return res.status(500).json({ mailSent: 'false', message: "Internal Server Error" })
+      return res.status(500).json({ mailSent: false, message: "Internal Server Error" })
     }
   } else {
 
@@ -78,13 +78,13 @@ const mailController = async (req, res) => {
       const authData = await authHandler(email, otp);
   
       if (authData.confirmed) {
-        return res.status(200).json({ otpConfirmed: 'true', message: authData.msg });
+        return res.status(200).json({ otpConfirmed: true, message: authData.msg });
       } else {
-        return res.status(400).json({ otpConfirmed: 'false', message: "otp is invalid" })
+        return res.status(400).json({ otpConfirmed: false, message: "otp is invalid" })
       }
     } catch (error) {
       console.log("OTP Sending error: ", error)
-      return res.status(500).json({ otpConfirmed: 'false', message: "Internal Server Error" })
+      return res.status(500).json({ otpConfirmed: false, message: "Internal Server Error" })
     }  
     
   }   
@@ -127,11 +127,12 @@ const usernameController = async function (req, res) {
           user['Password'] = "PASSWORD WONT BE DISCLOSED"
           res.status(200).json(user)
         } else {
-          res.status(500).json({ message: "Unable to create Token" })
+          const userDeleted = await User.findByIdAndDelete(user.id);
+          res.status(500).json({ message: "Unable to create Token. User Not Created", userDeleted })
         }
 
       } else {
-        res.status(500).json({ userCreated: 'false', message: "Unable to Create a new user" });
+        res.status(500).json({ userCreated: false, message: "Unable to Create a new user" });
       }
     } catch (err) {
       console.log("Signup Username Error: ", err)
@@ -146,7 +147,7 @@ const login = async function (req, res) {
 
   // HERE WE ARE CHECKING IF THE GIVEN CREDENTIALS MATCH IN THE ONE IN DB
   try {
-    let user = await User.findOne({ $or: [{ Email: userOrMail }, { Username: userOrMail }] }).select('-Password -Email')
+    let user = await User.findOne({ $or: [{ Email: userOrMail }, { Username: userOrMail }] }).select(' -Email')
     if (user) {
       const auth = await verifyHash(user.Password, pass)
       if (auth) {
@@ -158,6 +159,8 @@ const login = async function (req, res) {
           req.session.userID = user._id
           req.session.username = user.Username
           req.session.loggedIn = true
+
+          user.Password = "Can't Reveal Password"
 
           res.status(200).json(user)
         } else {

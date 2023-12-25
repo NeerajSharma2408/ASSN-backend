@@ -11,7 +11,7 @@ const toggleLike = async (like, commentID, userID, reaction, model) => {
     
         response = await Reaction.create(likeObj)
     }else{
-        response = await Reaction.findOneAndDelete({$and: [{By: userID}, {Parent: commentID}]})
+        response = await Reaction.findOneAndDelete({By: userID, Parent: commentID})
     }
 }
 

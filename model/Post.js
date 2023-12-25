@@ -43,6 +43,6 @@ const PostSchema = new Schema({
     timestamps: true,
 });
 
-PostSchema.index({community: 1, By: 1, timestamps: -1})
+PostSchema.index({Community: 1, By: 1, timestamps: -1})
 
 module.exports = mongoose.model('Post', PostSchema)

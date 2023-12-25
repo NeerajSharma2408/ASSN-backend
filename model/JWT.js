@@ -5,10 +5,8 @@ const mongoose = require('mongoose')
 const JwtSchema = new mongoose.Schema({
     UserID: {
         type: mongoose.Schema.Types.ObjectId,
-        unique: true,
-        required: true,
-        index: true,
         ref: 'User',
+        index: true,
     },
     Token: {
         type: String,
