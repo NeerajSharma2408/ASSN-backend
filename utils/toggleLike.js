@@ -2,6 +2,8 @@ const Comment = require("../model/Comment")
 const Post = require("../model/Post")
 const Reaction = require("../model/Reaction")
 const Message = require("../model/Message")
+const { postLike } = require("../lib/impressionConstants")
+const updatePostImpressions = require("./updatePostImpressions")
 
 const toggleLike = async (like, parentID, userID, reaction, model) => {
     let response = {}
@@ -33,6 +35,7 @@ const toggleLike = async (like, parentID, userID, reaction, model) => {
         if(likePresent){
             response = await Reaction.findOneAndUpdate({$set: {Reaction: reaction}})
         }else{
+            updatePostImpressions(parentID, postLike);
             const likeObj = {
                 Parent: parentID,
                 By: userID,
@@ -42,6 +45,7 @@ const toggleLike = async (like, parentID, userID, reaction, model) => {
             response = await Reaction.create(likeObj)
         }
     }else{
+        updatePostImpressions(parentID, -postLike);
         response = await Reaction.findOneAndDelete({By: userID, Parent: parentID})
     }
     return response

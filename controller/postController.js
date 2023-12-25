@@ -1,4 +1,4 @@
-const { postClick, postLike } = require("../lib/impressionConstants");
+const { postClick } = require("../lib/impressionConstants");
 const Comment = require("../model/Comment");
 const Friend = require("../model/Friend");
 const Post = require("../model/Post");
@@ -117,7 +117,6 @@ const likePost = async (req, res) => {
     const { like, reaction } = req.body;
 
     try {
-        updatePostImpressions(postid, like ? postLike : -postLike);
         let response = await toggleLike(like, postid, req.id, reaction, "Post");
         if (response) {
             res.status(200).json({ message: "Post Like Toggled." })
