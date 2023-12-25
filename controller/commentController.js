@@ -13,7 +13,7 @@ const getPostComments = async () => {
     const page = req.query.page || 1;
 
     const comments = await Comment.find({ Post: postID, Parent: null }).select('-Post').skip((page - 1) * limit).limit(limit).exec()
-    if (isPostAccessible(req.id) && Array.isArray(comments) && comments.length === 0) {
+    if (isPostAccessible(req.id, postID) && Array.isArray(comments) && comments.length === 0) {
         res.status(400).json({ message: "No Comments Found or not Authorized to view Post" })
     } else {
         res.status(200).json({ message: "Comments Found", comments })
@@ -30,7 +30,7 @@ const getCommentReplies = async () => {
     const page = req.query.page || 1;
 
     const replies = await Comment.find({ Post: postID, Parent: commentID }).select('-Post').skip((page - 1) * limit).limit(limit).exec()
-    if (isPostAccessible(req.id) && Array.isArray(replies) && replies.length === 0) {
+    if (isPostAccessible(req.id, postID) && Array.isArray(replies) && replies.length === 0) {
         res.status(200).json({ message: "No Comments Found or not Authorized to view Post" })
     } else {
         res.status(200).json({ message: "Replies Found", replies })

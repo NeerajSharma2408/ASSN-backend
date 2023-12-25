@@ -1,18 +1,50 @@
+const Comment = require("../model/Comment")
+const Post = require("../model/Post")
 const Reaction = require("../model/Reaction")
+const Message = require("../model/Message")
 
-const toggleLike = async (like, commentID, userID, reaction, model) => {
-    if(like){
-        const likeObj = {
-            Parent: commentID,
-            By: req.id,
-            Reaction: reaction,
-            onModel: model
-        }
+const toggleLike = async (like, parentID, userID, reaction, model) => {
+    let response = {}
+
+    let parentExists = true
+
+    switch (model) {
+        case "Post":
+            parentExists = await Post.exists({'_id': parentID})
+            break;
+            
+        case "Message":
+            parentExists = await Message.exists({'_id': parentID})
+            break;
+            
+        case "Comment":
+            parentExists = await Comment.exists({'_id': parentID})    
+            break;
     
-        response = await Reaction.create(likeObj)
-    }else{
-        response = await Reaction.findOneAndDelete({By: userID, Parent: commentID})
+        default:
+            parentExists = false;
+            break;
     }
+    if(!parentExists){
+        return false;
+    }
+    if(like){
+        const likePresent = await Reaction.exists({Parent: parentID, By: userID})
+        if(likePresent){
+            response = await Reaction.findOneAndUpdate({$set: {Reaction: reaction}})
+        }else{
+            const likeObj = {
+                Parent: parentID,
+                By: userID,
+                Reaction: reaction,
+                onModel: model
+            }
+            response = await Reaction.create(likeObj)
+        }
+    }else{
+        response = await Reaction.findOneAndDelete({By: userID, Parent: parentID})
+    }
+    return response
 }
 
 module.exports = toggleLike

@@ -1,4 +1,4 @@
-const { getPosts, getCommunityPosts, getPost, createPost, likePost, updatePost, deletePost } = require('../controller/post Controller')
+const { getPosts, getCommunityPosts, getPost, createPost, likePost, updatePost, deletePost } = require('../controller/postController')
 
 const postRouter = require('express').Router()
 
@@ -6,7 +6,6 @@ const postRouter = require('express').Router()
 
 // GET ALL POST ROUTE (for users{self or commmunity-member})
 postRouter.get('/', getPosts)
-postRouter.get('/:userID/', getPosts)
 
 // GET ALL POST ROUTE (for community)
 postRouter.get('/community/', getCommunityPosts)

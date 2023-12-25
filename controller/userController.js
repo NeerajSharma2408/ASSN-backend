@@ -59,7 +59,6 @@ const searchCommunity = async (req, res) => {
         communityMembers = await User.find({ Community: userCommunity.Community }).select('Name Username Avatar')
         myCache.set(userCommunity.Community, communityMembers, 600)
     }
-    console.log(communityMembers)
     const matches = communityMembers.filter(communityMember => {
         return ((communityMember.Username).includes(usernameOrName)) || ((communityMember.Name).includes(usernameOrName));
     })
