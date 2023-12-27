@@ -1,11 +1,14 @@
 const { getPostComment, getPostCommentReplies, postComment, commentLike } = require("../lib/impressionConstants");
 const Comment = require("../model/Comment");
 const Reaction = require("../model/Reaction");
-const { isPostAccessible } = require("../utils/postAuth");
+const { isUsersPostAccessible } = require("../utils/postAuth");
 const toggleLike = require("../utils/toggleLike");
 
-const getPostComments = async () => {
+const expressAsyncHandler = require('express-async-handler');
+
+const getPostComments = expressAsyncHandler(async (req, res) => {
     const postID = req.params.postid;
+    const userID = req.params.userId;
 
     updatePostImpressions(postID, getPostComment);
 
@@ -13,14 +16,14 @@ const getPostComments = async () => {
     const page = req.query.page || 1;
 
     const comments = await Comment.find({ Post: postID, Parent: null }).select('-Post').skip((page - 1) * limit).limit(limit).exec()
-    if (isPostAccessible(req.id, postID) && Array.isArray(comments) && comments.length === 0) {
+    if (isUsersPostAccessible(req.id, userID) && Array.isArray(comments) && comments.length === 0) {
         res.status(400).json({ message: "No Comments Found or not Authorized to view Post" })
     } else {
         res.status(200).json({ message: "Comments Found", comments })
     }
-}
+})
 
-const getCommentReplies = async () => {
+const getCommentReplies = expressAsyncHandler(async (req, res) => {
     const postID = req.params.postid;
     const commentID = req.params.comment;
 
@@ -30,14 +33,14 @@ const getCommentReplies = async () => {
     const page = req.query.page || 1;
 
     const replies = await Comment.find({ Post: postID, Parent: commentID }).select('-Post').skip((page - 1) * limit).limit(limit).exec()
-    if (isPostAccessible(req.id, postID) && Array.isArray(replies) && replies.length === 0) {
+    if (isUsersPostAccessible(req.id, userID) && Array.isArray(replies) && replies.length === 0) {
         res.status(200).json({ message: "No Comments Found or not Authorized to view Post" })
     } else {
         res.status(200).json({ message: "Replies Found", replies })
     }
-}
+})
 
-const createComment = async () => {
+const createComment = expressAsyncHandler(async (req, res) => {
     const { postID, parent, message } = req.body
 
     updatePostImpressions(postID, postComment);
@@ -56,9 +59,9 @@ const createComment = async () => {
     } else {
         res.status(500).json({ message: "Comment not Created. Internal server Error." })
     }
-}
+})
 
-const toggleCommentLike = async () => {
+const toggleCommentLike = expressAsyncHandler(async (req, res) => {
     const commentID = req.params.commentid;
     const postID = req.params.postid;
     const { like } = req.body
@@ -72,9 +75,9 @@ const toggleCommentLike = async () => {
     } else {
         res.status(500).json({ message: "Comment Like not Toggled. Internal server Error." })
     }
-}
+})
 
-const deleteComment = async () => {
+const deleteComment = expressAsyncHandler(async (req, res) => {
     const commentID = req.params.comment;
 
     try {
@@ -90,6 +93,6 @@ const deleteComment = async () => {
             res.status(500).json({ message: "Comment not Deleted. Internal server Error." })
         }
     }
-}
+})
 
 module.exports = { getPostComments, getCommentReplies, createComment, toggleCommentLike, deleteComment }

@@ -11,7 +11,6 @@ const createToken = async function (id, username) {
         }else{
             const userData = { UserID: id, Token: Token }
             jwt = await JWT.create(userData);
-            console.log(jwt)
             
             return {result: true, message: "TOKEN CREATED"}
         }

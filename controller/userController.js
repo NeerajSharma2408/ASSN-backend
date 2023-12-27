@@ -4,32 +4,29 @@ const User = require("../model/User")
 const NodeCache = require("node-cache");
 const myCache = new NodeCache({ stdTTL: 600, checkperiod: 660 });
 
-const getUser = async (req, res) => {
-    let userID = req.params.userID
-    try {
-        if (userID) {
-            let communityUser = await User.findById(userID).select("-Password -Email -Community");
-            if (communityUser) {
-                const isFriend = await Friend.exists({ $or: [{ Recipient: req.id }, { Recipient: userID }, { Requester: req.id }, { Requester: userID }] });
-                res.status(200).json({ message: "User Found", user: communityUser, isFriend })
-            } else {
-                res.status(400).json({ message: "User Not Found" })
-            }
-        } else {
-            let user = await User.findById(req.id).select('-Password')
-            if (!user)
-                res.status(400).json({ message: "User Doesn't Exist. Illegal Request." })
-            else {
-                res.status(200).json({ message: "User Found", user: user })
-            }
-        }
-    } catch (error) {
-        console.log("Error: ", error)
-        res.status(500).json({ message: "Internal Server Error" })
-    }
-}
+const expressAsyncHandler = require('express-async-handler');
 
-const searchFriends = async (req, res) => {
+const getUser = expressAsyncHandler(async (req, res) => {
+    let userID = req.params.userID
+    if (userID) {
+        let communityUser = await User.findById(userID).select("-Password -Email -Community");
+        if (communityUser) {
+            const isFriend = await Friend.exists({ $or: [{ Recipient: req.id }, { Recipient: userID }, { Requester: req.id }, { Requester: userID }] });
+            res.status(200).json({ message: "User Found", user: communityUser, isFriend })
+        } else {
+            res.status(400).json({ message: "User Not Found" })
+        }
+    } else {
+        let user = await User.findById(req.id).select('-Password')
+        if (!user)
+            res.status(400).json({ message: "User Doesn't Exist. Illegal Request." })
+        else {
+            res.status(200).json({ message: "User Found", user: user })
+        }
+    }
+})
+
+const searchFriends = expressAsyncHandler(async (req, res) => {
     const usernameOrName = req.params.userName
     let friends = myCache.get((req.id).toString())
     if (!friends) {
@@ -47,9 +44,9 @@ const searchFriends = async (req, res) => {
         res.status(200).json(matches)
     else
         res.status(404).json({ message: "No Matching User Found" })
-}
+})
 
-const searchCommunity = async (req, res) => {
+const searchCommunity = expressAsyncHandler(async (req, res) => {
     const usernameOrName = req.params.userName
 
     const userCommunity = await User.findById(req.id).select('Community')
@@ -66,6 +63,6 @@ const searchCommunity = async (req, res) => {
         res.status(200).json(matches)
     else
         res.status(404).json({ message: "No Matching User Found" })
-}
+})
 
 module.exports = { getUser, searchCommunity, searchFriends }

@@ -37,7 +37,7 @@ app.use(session({
 // API ROUTES
 app.use('/api/auth/', authRoutes); // Authentication Routes
 app.use('/api/user/', sessionAuth, userRouter); // User Routes
-app.use('/api/post/', sessionAuth, postRouter); // Post Routes
+app.use('/api/:userId/post/', sessionAuth, postRouter); // Post Routes
 app.use('/api/comment/', sessionAuth, commentRouter); // Comment Routes
 app.use('/api/dashboard/', sessionAuth, dashboardRoutes); // Dashboard Routes
 
