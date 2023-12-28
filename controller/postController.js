@@ -18,16 +18,16 @@ const getPosts = expressAsyncHandler(async (req, res) => {
 
     if (userID) {
         let Posts = []
-        if(userID === res.locals.id){
-            Posts = await Post.find({By: userID}).select("-Community").skip((page - 1) * limit).limit(limit).exec();
+        if (userID === res.locals.id) {
+            Posts = await Post.find({ By: userID }).select("-Community").skip((page - 1) * limit).limit(limit).exec();
             res.status(200).json({ message: "Posts Found", Posts })
-        }else{
+        } else {
             let communityUser = await User.findById(userID).select('-Password -Email -Groups');
             let isUserAccessible = await isUsersPostAccessible(res.locals.id, userID)
             if (communityUser && isUserAccessible) {
                 Posts = await Post.find({ $and: [{ "Community": communityUser?.Community }, { "By": userID }] }).select('-Community').skip((page - 1) * limit).limit(limit).exec();
 
-                res.status(200).json({ message: "User Found", user: communityUser, Posts})
+                res.status(200).json({ message: "User Found", user: communityUser, Posts })
             } else {
                 res.status(400).json({ message: (communityUser ? "Community Mismatched Issue" : "User Not Found"), isUserAccessible })
             }
@@ -41,7 +41,7 @@ const getPosts = expressAsyncHandler(async (req, res) => {
 const getCommunityPosts = expressAsyncHandler(async (req, res) => {
     const limit = req.query.limit || 10;
     const page = req.query.page || 1;
-    
+
     let userCommunity = await User.findById(res.locals.id).select('Community')
     userCommunity = userCommunity.Community
 
@@ -119,11 +119,16 @@ const deletePost = expressAsyncHandler(async (req, res) => {
     const postID = req.params.postid;
 
     const post = await Post.findByIdAndDelete(postID)
-    const comment = await Comment.find({ Parent: postID }).select('_id')
-    const commentDeleted = await Comment.deleteMany({ Parent: postID }).select('_id')
-    const replies = await Comment.find({ Parent: { $in: comment } }).select('_id')
-    const repliesDeleted = await Comment.deleteMany({ Parent: { $in: comment } }).select('_id')
-    const likes = await Reaction.deleteMany({ Parent: { $in: [...replies, comment, postID] } })
+    let comments = await Comment.find({ Post: postID }).select('_id') || []
+    comments = comments.map(comment => comment._id) 
+
+    let replies = await Comment.find({ Parent: {$in: [...comments]} }).select('_id') || []
+    replies = replies.map(reply => reply._id)
+    const repliesDeleted = await Comment.deleteMany({ _id: { $in: [...replies, ...comments] } });
+
+    let likes = await Reaction.find({ Parent: { $in: [...replies, ...comments] } }).select('_id') || []
+    likes = likes.map(like => like._id)
+    const likesDeleted = await Reaction.deleteMany({ _id: { $in: [...likes] } })
 
     res.status(200).json({ message: "Post Deleted" })
 })

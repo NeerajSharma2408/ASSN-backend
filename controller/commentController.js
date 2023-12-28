@@ -57,13 +57,16 @@ const createComment = expressAsyncHandler(async (req, res) => {
 
             // TO CHECK IF THE REPLY TO THE COMMENT IS ITSELF A REPLY TO ANOTHER COMMENT, IF SO THEN CHANGE THE PARENT REFERENCE
             const isReply = await Comment.findById(commentId);
-            if(isReply.Parent){
+            if(isReply && isReply.Parent){
                 commentId = isReply.Parent
             }
+
+            const parentExists = await Comment.exists({_id: commentId});
+            
             const comment = {
                 Post: postID,
                 By: res.locals.id,
-                Parent: commentId ? commentId : null,
+                Parent: parentExists ? commentId : null,
                 Message: message,
                 Avatar: user.Avatar
             }
@@ -106,7 +109,7 @@ const updateComment = expressAsyncHandler(async (req, res) => {
 
 const deleteComment = expressAsyncHandler(async (req, res) => {
     const postID = req.params.parentId;
-    const commentID = req.params.comment;
+    const commentID = req.params.commentId;
 
     const post = await Post.findById(postID);
     
@@ -117,11 +120,18 @@ const deleteComment = expressAsyncHandler(async (req, res) => {
         
         if (canAccessPost) {
             const comment = await Comment.findByIdAndDelete(commentID)
-            const replies = await Comment.find({ Parent: { $in: comment.id } }).select('_id')
-            const repliesDeleted = await Comment.deleteMany({ Parent: { $in: replies } }).select('_id')
-            const likes = await Reaction.deleteMany({ Parent: { $in: [...replies, comment.id] } })
+
+            let replies = await Comment.find({ Parent: commentID }).select('_id') || []
+            replies = replies.map(reply => reply._id)
+            const repliesDeleted = await Comment.deleteMany({ _id: { $in: [...replies] } })
+
+            let likes = await Reaction.find({ Parent: { $in: [...replies, commentID] } }).select('_id') || []
+            likes = likes.map(like => like._id)
+            const likesDeleted = await Reaction.deleteMany({ _id: { $in: [...likes] } })
+
+            const impression = (likes.length * commentLike) + ((replies.length + 1) * postComment)
         
-            updatePostImpressions(comment.Parent, -(likes * commentLike + (replies + 1) * postComment));
+            updatePostImpressions(postID, -(impression));
         
             res.status(200).json({ message: "Comment Deleted" })
         } else {

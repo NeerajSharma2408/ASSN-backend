@@ -15,7 +15,6 @@ commentRouter.route('/:parentId/:commentId/')
 
     // COMMENT UPDATE ROUTE
     .patch(updateComment)
-    .put(updateComment)
 
     // COMMENT DELETE ROUTE
     .delete(deleteComment)
