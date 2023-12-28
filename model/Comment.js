@@ -12,6 +12,10 @@ const CommentSchema = new Schema({
         required: true,
         ref: 'User',
     },
+    Avatar: {
+        type: String,
+        deafult: "",
+    },
     Parent: {
         type: mongoose.SchemaTypes.ObjectId,
         ref: 'Comment',

@@ -1,20 +1,23 @@
-const { getPostComments, getCommentReplies, createComment, toggleCommentLike, deleteComment } = require('../controller/commentController')
+const { getPostComments, createComment, updateComment, deleteComment } = require('../controller/commentController')
 
 const commentRouter = require('express').Router()
 
-// GET POST COMMENTS ROUTE
-commentRouter.get('/:postid/comments', getPostComments)
+commentRouter.route('/:parentId/')
 
-// GET POST COMMENT REPLIES ROUTE
-commentRouter.get('/:postid/:comment/replies', getCommentReplies)
+    // GET POST COMMENTS ROUTE // GET POST COMMENT REPLIES ROUTE
+    .get(getPostComments)
 
-// COMMENT CREATE ROUTE
-commentRouter.post('/:postid/postcomment', createComment)
+    // COMMENT CREATE ROUTE
+    .post(createComment)
 
-// COMMENT LIKE ROUTE
-commentRouter.post('/:postid/:commentid/', toggleCommentLike)
 
-// COMMENT DELETE ROUTE
-commentRouter.delete('/:postid/:commentid/', deleteComment)
+commentRouter.route('/:parentId/:commentId/')
+
+    // COMMENT UPDATE ROUTE
+    .patch(updateComment)
+    .put(updateComment)
+
+    // COMMENT DELETE ROUTE
+    .delete(deleteComment)
 
 module.exports = commentRouter

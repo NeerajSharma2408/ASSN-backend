@@ -5,7 +5,8 @@ const sessionAuth = async (req, res, next)=>{
     const username = req.session.username
     const id = new ObjectId(req.session.userID)
     req.username = username
-    req.id = id
+    res.locals = req.params
+    res.locals['id'] = id
     if(!id || !username){
         res.status(400).json({message: "Session not present"})
     }else{

@@ -16,6 +16,10 @@ const ReactionSchema = new Schema({
         type: mongoose.SchemaTypes.ObjectId,
         ref: 'User',
     },
+    Avatar: {
+        type: String,
+        deafult: "",
+    },
     Reaction: {
         type: String,
         enum: [

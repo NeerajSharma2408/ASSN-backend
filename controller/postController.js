@@ -7,46 +7,42 @@ const Reaction = require("../model/Reaction");
 const User = require("../model/User");
 
 const { isUsersPostAccessible } = require("../utils/postAuth");
-const toggleLike = require("../utils/toggleLike");
 const updatePostImpressions = require("../utils/updatePostImpressions");
 
 const expressAsyncHandler = require('express-async-handler');
 
 const getPosts = expressAsyncHandler(async (req, res) => {
-    const userID = req.body.userID;
+    const userID = req.query.userId;
     const limit = req.query.limit || 18;
     const page = req.query.page || 1;
 
-    let userCommunity = await User.findById(req.id).select('Community');
-    userCommunity = userCommunity.Community
-
     if (userID) {
-        let communityUser = await User.findById(userID).select('-Password -Email -Groups');
-        if (communityUser?.Community === userCommunity) {
-            const isFriend = await Friend.exists({ $or: [{ Recipient: req.id }, { Recipient: userID }, { Requester: req.id }, { Requester: userID }] });
-            let Posts = []
-            let isUserAccessible = await isUsersPostAccessible(req.id, userID)
-            if (isUserAccessible) {
-                Posts = await Post.find({ $and: [{ "Community": userCommunity }, { "By": userID }] }).select('-Community').skip((page - 1) * limit).limit(limit).exec();
+        let Posts = []
+        if(userID === res.locals.id){
+            Posts = await Post.find({By: userID}).select("-Community").skip((page - 1) * limit).limit(limit).exec();
+            res.status(200).json({ message: "Posts Found", Posts })
+        }else{
+            let communityUser = await User.findById(userID).select('-Password -Email -Groups');
+            let isUserAccessible = await isUsersPostAccessible(res.locals.id, userID)
+            if (communityUser && isUserAccessible) {
+                Posts = await Post.find({ $and: [{ "Community": communityUser?.Community }, { "By": userID }] }).select('-Community').skip((page - 1) * limit).limit(limit).exec();
+
+                res.status(200).json({ message: "User Found", user: communityUser, Posts})
+            } else {
+                res.status(400).json({ message: (communityUser ? "Community Mismatched Issue" : "User Not Found"), isUserAccessible })
             }
-            res.status(200).json({ message: "User Found", user: communityUser, Posts, isFriend: isFriend ? true : false })
-        } else {
-            res.status(400).json({ message: (communityUser ? "Community Mismatched Issue" : "User Not Found") })
         }
     } else {
-        if (!userCommunity)
-            res.status(400).json({ message: "User Doesn't Exist. Illegal Request." })
-        else {
-            const Posts = await Post.find({ $and: [{ "Community": userCommunity }, { "By": req.id }] }).select('-Community').skip((page - 1) * limit).limit(limit).exec();
-            res.status(200).json({ message: "Posts Found", Posts: Posts, "Community": userCommunity })
-        }
+        res.status(400)
+        throw new Error("User Id not found")
     }
 })
 
 const getCommunityPosts = expressAsyncHandler(async (req, res) => {
     const limit = req.query.limit || 10;
     const page = req.query.page || 1;
-    let userCommunity = await User.findById(req.id).select('Community')
+    
+    let userCommunity = await User.findById(res.locals.id).select('Community')
     userCommunity = userCommunity.Community
 
     const Posts = await Post.find({ Community: userCommunity, isPrivate: false }).select("-Community").sort({ Impressions: -1 }).skip((page - 1) * limit).limit(limit).exec();
@@ -65,16 +61,16 @@ const getPost = expressAsyncHandler(async (req, res) => {
 
     if (post) {
         const likes = await Reaction.find({ Parent: postID }).select('-Parent').sort({ "timestamp": -1 });
-        let numberOfLikes = likes.length()
+        let totalLikes = likes.length
 
-        const recentLikes = likes.slice(0, 50)
+        const recentLikes = likes.slice(0, 10)
 
-        if (post.By === req.id) {
-            res.status(200).json({ message: "Post Found", post, recentLikes, numberOfLikes })
+        if (post.By === res.locals.id) {
+            res.status(200).json({ message: "Post Found", post, recentLikes, totalLikes })
         } else {
-            let isPostAccessibleByUser = await isUsersPostAccessible(req.id, post.By)
+            let isPostAccessibleByUser = await isUsersPostAccessible(res.locals.id, post.By)
             if (isPostAccessibleByUser && post) {
-                res.status(200).json({ message: "Post Found", post, likes })
+                res.status(200).json({ message: "Post Found", post, likes, totalLikes })
             } else {
                 res.status(400).json({ message: "Invalid Request. Post Can't Be Accessed." })
             }
@@ -87,12 +83,12 @@ const getPost = expressAsyncHandler(async (req, res) => {
 const createPost = expressAsyncHandler(async (req, res) => {
     const { caption, attachmemts, content } = req.body
 
-    const user = await User.findById(req.id).select('_id isPrivateAccount Community')
+    const user = await User.findById(res.locals.id).select('_id isPrivateAccount Community')
     let post = {
         Caption: caption,
         MediaURLs: attachmemts ? attachmemts : [],
         Content: content,
-        By: req.id,
+        By: res.locals.id,
         isPrivate: user.isPrivateAccount,
         Community: user.Community
     }
@@ -103,18 +99,6 @@ const createPost = expressAsyncHandler(async (req, res) => {
         res.status(200).json({ message: "Post Created.", post })
     } else {
         res.status(400).json({ message: "Post not Created." })
-    }
-})
-
-const likePost = expressAsyncHandler(async (req, res) => {
-    const { postid } = req.params;
-    const { like, reaction } = req.body;
-
-    let response = await toggleLike(like, postid, req.id, reaction, "Post");
-    if (response) {
-        res.status(200).json({ message: "Post Like Toggled." })
-    } else {
-        res.status(400).json({ message: "Post Like not Toggled." })
     }
 })
 
@@ -144,4 +128,4 @@ const deletePost = expressAsyncHandler(async (req, res) => {
     res.status(200).json({ message: "Post Deleted" })
 })
 
-module.exports = { getPosts, getCommunityPosts, getPost, createPost, likePost, updatePost, deletePost }
+module.exports = { getPosts, getCommunityPosts, getPost, createPost, updatePost, deletePost }

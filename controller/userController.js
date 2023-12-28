@@ -11,13 +11,13 @@ const getUser = expressAsyncHandler(async (req, res) => {
     if (userID) {
         let communityUser = await User.findById(userID).select("-Password -Email -Community");
         if (communityUser) {
-            const isFriend = await Friend.exists({ $or: [{ Recipient: req.id }, { Recipient: userID }, { Requester: req.id }, { Requester: userID }] });
+            const isFriend = await Friend.exists({ $or: [{ Recipient: res.locals.id }, { Recipient: userID }, { Requester: res.locals.id }, { Requester: userID }] });
             res.status(200).json({ message: "User Found", user: communityUser, isFriend })
         } else {
             res.status(400).json({ message: "User Not Found" })
         }
     } else {
-        let user = await User.findById(req.id).select('-Password')
+        let user = await User.findById(res.locals.id).select('-Password')
         if (!user)
             res.status(400).json({ message: "User Doesn't Exist. Illegal Request." })
         else {
@@ -28,14 +28,14 @@ const getUser = expressAsyncHandler(async (req, res) => {
 
 const searchFriends = expressAsyncHandler(async (req, res) => {
     const usernameOrName = req.params.userName
-    let friends = myCache.get((req.id).toString())
+    let friends = myCache.get((res.locals.id).toString())
     if (!friends) {
-        friends = await Friend.find({ $and: [{ Status: 3 }, { $or: [{ 'Requester': req.id }, { 'Recipient': req.id }] }] })
+        friends = await Friend.find({ $and: [{ Status: 3 }, { $or: [{ 'Requester': res.locals.id }, { 'Recipient': res.locals.id }] }] })
         let matches = friends.map(friend => {
-            return (friend.Recipient).toString() == req.id ? friend.Requester : friend.Recipient;
+            return (friend.Recipient).toString() == res.locals.id ? friend.Requester : friend.Recipient;
         })
         friends = await User.find({ '_id': { $in: matches } }).select('_id Username Name Avatar')
-        myCache.set((req.id).toString(), friends, 600)
+        myCache.set((res.locals.id).toString(), friends, 600)
     }
     matches = friends.filter(friend => {
         return ((friend.Username).includes(usernameOrName)) || ((friend.Name).includes(usernameOrName));
@@ -49,7 +49,7 @@ const searchFriends = expressAsyncHandler(async (req, res) => {
 const searchCommunity = expressAsyncHandler(async (req, res) => {
     const usernameOrName = req.params.userName
 
-    const userCommunity = await User.findById(req.id).select('Community')
+    const userCommunity = await User.findById(res.locals.id).select('Community')
 
     let communityMembers = myCache.get(userCommunity.Community)
     if (!communityMembers) {

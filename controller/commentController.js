@@ -1,98 +1,135 @@
 const { getPostComment, getPostCommentReplies, postComment, commentLike } = require("../lib/impressionConstants");
 const Comment = require("../model/Comment");
+const Post = require("../model/Post");
 const Reaction = require("../model/Reaction");
+const User = require("../model/User");
+
 const { isUsersPostAccessible } = require("../utils/postAuth");
-const toggleLike = require("../utils/toggleLike");
 
 const expressAsyncHandler = require('express-async-handler');
+const updatePostImpressions = require("../utils/updatePostImpressions");
 
 const getPostComments = expressAsyncHandler(async (req, res) => {
-    const postID = req.params.postid;
-    const userID = req.params.userId;
+    const postID = req.params.parentId;
+    const commentID = req.query.commentId; // TO GET REPLIES TO A PARTICULAR COMMENT
 
-    updatePostImpressions(postID, getPostComment);
+    const post = await Post.findById(postID);
 
-    const limit = req.query.limit || 15;
-    const page = req.query.page || 1;
+    if (post) {
+        const userID = post.By;
+        const limit = req.query.limit || 25;
+        const page = req.query.page || 1;
 
-    const comments = await Comment.find({ Post: postID, Parent: null }).select('-Post').skip((page - 1) * limit).limit(limit).exec()
-    if (isUsersPostAccessible(req.id, userID) && Array.isArray(comments) && comments.length === 0) {
-        res.status(400).json({ message: "No Comments Found or not Authorized to view Post" })
+        const canAccessComments = await isUsersPostAccessible(res.locals.id, userID);
+
+        if (canAccessComments) {
+            let comments = await Comment.find({ Post: postID, Parent: commentID || null }).select('-Post').skip((page - 1) * limit).limit(limit).exec();
+            updatePostImpressions(postID, commentID ? getPostCommentReplies : getPostComment);
+            comments = Promise.all(comments.map(async (comment) => {
+                const totalLikes = await Reaction.countDocuments({ Parent: comment.id });
+                const totalReplies = await Comment.countDocuments({ Post: postID, Parent: comment.id });
+                return { comment, totalLikes, totalReplies }
+            }))
+            comments = await comments
+            res.status(200).json({ message: "Comments Found", comments })
+        } else {
+            res.status(400).json({ message: "No Comments Found or not Authorized to view Post" })
+        }
     } else {
-        res.status(200).json({ message: "Comments Found", comments })
-    }
-})
-
-const getCommentReplies = expressAsyncHandler(async (req, res) => {
-    const postID = req.params.postid;
-    const commentID = req.params.comment;
-
-    updatePostImpressions(postID, getPostCommentReplies);
-
-    const limit = req.query.limit || 10;
-    const page = req.query.page || 1;
-
-    const replies = await Comment.find({ Post: postID, Parent: commentID }).select('-Post').skip((page - 1) * limit).limit(limit).exec()
-    if (isUsersPostAccessible(req.id, userID) && Array.isArray(replies) && replies.length === 0) {
-        res.status(200).json({ message: "No Comments Found or not Authorized to view Post" })
-    } else {
-        res.status(200).json({ message: "Replies Found", replies })
+        res.status(404).json({ message: "Post Not Found" })
     }
 })
 
 const createComment = expressAsyncHandler(async (req, res) => {
-    const { postID, parent, message } = req.body
+    const postID = req.params.parentId;
+    let commentId = req.query.commentId; // TO CREATE REPLIES TO A PARTICULAR COMMENT
+    const message = req.body.message;
 
-    updatePostImpressions(postID, postComment);
+    const post = await Post.findById(postID);
+    
+    if (post) {
+        const userID = post.By;
+        
+        const canAccessPost = await isUsersPostAccessible(res.locals.id, userID);
+        
+        if (canAccessPost) {
+            const user = await User.findById(res.locals.id).select("Avatar");
 
-    const comment = {
-        Post: postID,
-        By: req.id,
-        Parent: parent ? parent : null,
-        Message: message
-    }
-
-    const response = await Comment.create(comment)
-
-    if (response.id) {
-        res.status(200).json({ message: "Comment Created" })
+            // TO CHECK IF THE REPLY TO THE COMMENT IS ITSELF A REPLY TO ANOTHER COMMENT, IF SO THEN CHANGE THE PARENT REFERENCE
+            const isReply = await Comment.findById(commentId);
+            if(isReply.Parent){
+                commentId = isReply.Parent
+            }
+            const comment = {
+                Post: postID,
+                By: res.locals.id,
+                Parent: commentId ? commentId : null,
+                Message: message,
+                Avatar: user.Avatar
+            }
+        
+            const response = await Comment.create(comment)
+            updatePostImpressions(postID, postComment);
+            res.status(200).json({ message: "Comment Created", response })
+        } else {
+            res.status(400).json({ message: "Not Authorized to view Post" })
+        }
     } else {
-        res.status(500).json({ message: "Comment not Created. Internal server Error." })
+        res.status(404).json({ message: "Post Not Found" })
     }
 })
 
-const toggleCommentLike = expressAsyncHandler(async (req, res) => {
-    const commentID = req.params.commentid;
-    const postID = req.params.postid;
-    const { like } = req.body
+const updateComment = expressAsyncHandler(async (req, res) => {
+    const postID = req.params.parentId;
+    const commentID = req.params.commentId;
+
+    const message = req.body.message;
+
+    const post = await Post.findById(postID);
     
-    updatePostImpressions(postID, like ? commentLike: -commentLike);
+    if (post) {
+        const userID = post.By;
+        
+        const canAccessPost = await isUsersPostAccessible(res.locals.id, userID);
+        
+        if (canAccessPost) {
+            const comment = await Comment.findByIdAndUpdate(commentID, { $set: { Message: message } }, { new: true });
 
-    let response = await toggleLike(like, commentID, req.id, 1, "Comment");
-
-    if (response.id) {
-        res.status(200).json({ message: "Comment Like Toggled" })
+            res.status(200).json({ message: "Comment Created", comment })
+        } else {
+            res.status(400).json({ message: "Not Authorized to view Post" })
+        }
     } else {
-        res.status(500).json({ message: "Comment Like not Toggled. Internal server Error." })
+        res.status(404).json({ message: "Post Not Found" })
     }
 })
 
 const deleteComment = expressAsyncHandler(async (req, res) => {
+    const postID = req.params.parentId;
     const commentID = req.params.comment;
 
-    try {
-        const comment = await Comment.findByIdAndDelete(commentID)
-        const replies = await Comment.deleteMany({ Parent: commentID }).select('_id')
-        const likes = await Reaction.deleteMany({ Parent: { $in: [...replies, comment] } })
-
-        updatePostImpressions(postID, -(likes*commentLike + (replies+1)*postComment));
-
-        res.status(200).json({ message: "Comment Deleted" })
-    } catch {
-        (err) => {
-            res.status(500).json({ message: "Comment not Deleted. Internal server Error." })
+    const post = await Post.findById(postID);
+    
+    if (post) {
+        const userID = post.By;
+        
+        const canAccessPost = await isUsersPostAccessible(res.locals.id, userID);
+        
+        if (canAccessPost) {
+            const comment = await Comment.findByIdAndDelete(commentID)
+            const replies = await Comment.find({ Parent: { $in: comment.id } }).select('_id')
+            const repliesDeleted = await Comment.deleteMany({ Parent: { $in: replies } }).select('_id')
+            const likes = await Reaction.deleteMany({ Parent: { $in: [...replies, comment.id] } })
+        
+            updatePostImpressions(comment.Parent, -(likes * commentLike + (replies + 1) * postComment));
+        
+            res.status(200).json({ message: "Comment Deleted" })
+        } else {
+            res.status(400).json({ message: "Not Authorized to view Post" })
         }
+    } else {
+        res.status(404).json({ message: "Post Not Found" })
     }
 })
 
-module.exports = { getPostComments, getCommentReplies, createComment, toggleCommentLike, deleteComment }
+module.exports = { getPostComments, createComment, updateComment, deleteComment }

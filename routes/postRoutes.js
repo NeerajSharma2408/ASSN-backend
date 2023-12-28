@@ -16,9 +16,6 @@ postRouter.get('/:postid/', getPost)
 // CREATE POST ROUTE
 postRouter.post('/', createPost)
 
-// TOOGLE POST LIKE ROUTE
-postRouter.post('/:postid/react', likePost)
-
 // unavailable for users other than the owner
 // POST EDITING ROUTE
 postRouter.patch('/:postid/', updatePost)

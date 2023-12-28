@@ -11,6 +11,7 @@ const { errorHandler } = require('./middleware/errorHandler');
 const postRouter = require('./routes/postRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const commentRouter = require('./routes/commentRoutes');
+const reactRouter = require('./routes/reactRoutes');
 
 require('dotenv').config();
 
@@ -37,8 +38,9 @@ app.use(session({
 // API ROUTES
 app.use('/api/auth/', authRoutes); // Authentication Routes
 app.use('/api/user/', sessionAuth, userRouter); // User Routes
-app.use('/api/:userId/post/', sessionAuth, postRouter); // Post Routes
+app.use('/api/post/', sessionAuth, postRouter); // Post Routes
 app.use('/api/comment/', sessionAuth, commentRouter); // Comment Routes
+app.use('/api/react/', sessionAuth, reactRouter); // Reaction Routes
 app.use('/api/dashboard/', sessionAuth, dashboardRoutes); // Dashboard Routes
 
 // middleware for handling asynchronous and synchronus errors
