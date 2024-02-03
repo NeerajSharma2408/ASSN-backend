@@ -2,17 +2,17 @@ const express = require('express')
 const cors = require('cors')
 const session = require('express-session')
 
-const sessionAuth = require('../middleware/sessionAuth');
-const { errorHandler } = require('../middleware/errorHandler');
+const sessionAuth = require('./middleware/sessionAuth');
+const { errorHandler } = require('./middleware/errorHandler');
 
-const connectDB = require('../utils/connect_db');
+const connectDB = require('./utils/connect_db');
 
-const authRoutes = require('../routes/authRoutes');
-const userRouter = require('../routes/userRoutes');
-const postRouter = require('../routes/postRoutes');
-const commentRouter = require('../routes/commentRoutes');
-const reactRouter = require('../routes/reactRoutes');
-const dashboardRouter = require('../routes/dashboardRoutes');
+const authRoutes = require('./routes/authRoutes');
+const userRouter = require('./routes/userRoutes');
+const postRouter = require('./routes/postRoutes');
+const commentRouter = require('./routes/commentRoutes');
+const reactRouter = require('./routes/reactRoutes');
+const dashboardRouter = require('./routes/dashboardRoutes');
 
 require('dotenv').config();
 
