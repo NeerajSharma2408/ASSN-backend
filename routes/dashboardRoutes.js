@@ -1,5 +1,7 @@
-const dashboardRoutes = require('express').Router()
+const { getTimeline } = require('../controller/dashboardController')
 
-dashboardRoutes.get('/', )
+const dashboardRouter = require('express').Router()
 
-module.exports = dashboardRoutes
+dashboardRouter.get('/', getTimeline)
+
+module.exports = dashboardRouter

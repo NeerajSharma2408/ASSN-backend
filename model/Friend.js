@@ -16,10 +16,12 @@ const FriendSchema = new Schema({
     Status: {
         type: Number,
         enum: [
-            0,    //'add friend',
-            1,    //'requested',
-            2,    //'pending',
-            3,    //'friends'
+            0,    // 'add friend',
+            1,    // 'requested',
+            2,    // 'pending',
+            3,    // 'friends',
+            4,    // 'blocked',
+            5,    // 'restricted',
         ],
         default: 0
     },
