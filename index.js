@@ -35,7 +35,9 @@ app.use(session({
 // todo
 
 
-
+app.get('/api/', (req,res)=>{
+    res.status(200).json({message: "APP ROOTs"})
+})
 // API ROUTES
 app.use('/api/auth/', authRoutes); // Authentication Routes
 app.use('/api/user/', sessionAuth, userRouter); // User Routes
