@@ -170,7 +170,7 @@ const logout = expressAsyncHandler(async function (req, res) {
     res.status(400).json({ message: "ID neither present in session nor in body" })
   } else {
     deleteToken(id)
-    req.session.destro()
+    req.session.destroy()
     res.status(200).json({ message: "SESSION DESTROYED" })
   }
 })
