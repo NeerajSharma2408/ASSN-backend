@@ -16,9 +16,20 @@ const GroupSchema = new Schema({
             message: "There can't be more than 128 members in any Room",
         },
     },
-    Muted: {
-        type: Number,
-        deafult: 0,
+    Name: {
+        type: String,
+        required: function () {
+            return this.Members.length > 2;
+        },
+    },
+    CreatedBy: {
+        type: mongoose.SchemaType.ObjectId,
+        required: true,
+    },
+    isGroupChat: {
+        type: Boolean,
+        default: false,
+        required: true,
     }
 }, {
     timestamps: true,
@@ -26,4 +37,4 @@ const GroupSchema = new Schema({
 
 GroupSchema.index({"updatedAt": 1}); // Parallely update the Group UpdatedAt field when a msg is sent or arrived
 
-module.exports = mongoose.model('Group', GroupSchema)
+module.exports = mongoose.model('Group', GroupSchema);
