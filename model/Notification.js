@@ -35,6 +35,10 @@ const NotificationSchema = new Schema({
             RefSchema: 'User',
             RefId: this.From ,
         },
+    },
+    Read: {
+        type: Boolean,
+        default: false,
     }
 }, {
     timestamps: true

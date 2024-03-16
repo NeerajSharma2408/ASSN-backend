@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const session = require('express-session')
+const { Server } = require('socket.io')
 
 const sessionAuth = require('./middleware/sessionAuth');
 const { errorHandler } = require('./middleware/errorHandler');
@@ -60,3 +61,9 @@ const server = app.listen(PORT, async (err) => {
         connectDB(DB_URL)
     }
 })
+
+const io = new Server(server);
+
+io.on('connection', (socket)=>{
+    console.log("New User connected", socket)
+});
