@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const saltRounds = process.env.SALT_ROUNDS || 10;
+const saltRounds = Number(process.env.SALT_ROUNDS) || 10;
 
 const getHash = async (plaintextPassword) => {
     return new Promise((resolve, reject)=>{
