@@ -6,9 +6,8 @@ const getHash = async (plaintextPassword) => {
     bcrypt.hash(plaintextPassword, saltRounds, function(err, hash) {
         if(err){
             reject(`INTERNAL HASHING ERROR: ${err}`)
-        }else{
-            resolve(hash?.toString());
         }
+        resolve(hash?.toString());
     });});
 };
 
@@ -17,9 +16,8 @@ const verifyHash = async (hashPassword, plaintextPassword) => {
     bcrypt.compare(plaintextPassword, hashPassword, function(err, result) {
         if(err){
             reject(`INTERNAL HASHING ERROR: ${err}`)
-        }else{
-            resolve(result);
         }
+        resolve(result);
     });});
 }
 
