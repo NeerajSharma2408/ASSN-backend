@@ -66,4 +66,8 @@ const io = new Server(server);
 
 io.on('connection', (socket)=>{
     console.log("New User connected", socket)
+
+    socket.on('disconnect', () => {
+        console.log('user disconnected');
+    });
 });
