@@ -9,7 +9,6 @@ const getHash = async (plaintextPassword) => {
             reject(`INTERNAL HASHING ERROR: ${err}`)
         }
         resolve(hash?.toString());
-        console.log(hash?.toString())
     });});
 
     // SYNC APPROACH

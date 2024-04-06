@@ -65,4 +65,8 @@ const searchCommunity = expressAsyncHandler(async (req, res) => {
         res.status(404).json({ message: "No Matching User Found" })
 })
 
-module.exports = { getUser, searchCommunity, searchFriends }
+const updateProfile = expressAsyncHandler(async (req, res) => {
+    res.status(200).json({message: "update profile route"})
+})
+
+module.exports = { getUser, searchCommunity, searchFriends, updateProfile }

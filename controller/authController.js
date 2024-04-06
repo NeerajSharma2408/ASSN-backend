@@ -145,6 +145,8 @@ const resetpass = expressAsyncHandler(async function (req, res) {
 
   } else {
 
+    const user = await User.findOne({ Email: email })
+
     const response = await createToken(user._id, user.Username)
     console.log("token response: ", response.message)
     if (response.result) {
@@ -154,9 +156,9 @@ const resetpass = expressAsyncHandler(async function (req, res) {
       req.session.loggedIn = true
       
       const pass = await getHash(password)
-      const user = await User.findOneAndUpdate({ Email: email }, { $set: { Password: pass } }, { new: true, select: '-Password' })
+      const updatedUser = await User.findOneAndUpdate({ Email: email }, { $set: { Password: pass } }, { new: false, select: '-Password' })
 
-      res.status(200).json({ passwordResetSuccess: true, user })
+      res.status(200).json({ passwordResetSuccess: true, updatedUser })
     } else {
       throw new Error("Unable to create Session Token")
     }

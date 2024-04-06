@@ -1,4 +1,4 @@
-const { getUser, searchCommunity, searchFriends } = require('../controller/userController')
+const { getUser, searchCommunity, searchFriends, updateProfile } = require('../controller/userController')
 
 const userRouter = require('express').Router()
 
@@ -13,5 +13,8 @@ userRouter.get('/community/:userName', searchCommunity)
 
 // Search User's Friends
 userRouter.get('/friends/:userName', searchFriends)
+
+// Update User Profile
+userRouter.patch('/updateProfile', updateProfile)
 
 module.exports = userRouter
