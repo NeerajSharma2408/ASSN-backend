@@ -44,11 +44,15 @@ const usernameController = expressAsyncHandler(async function (req, res) {
   })
 
   if (userId) {
-    res.status(400).json({ message: "Username taken" })
+    console.log("error")
+    res.status(400);
+    throw new Error("Username taken");
   } else {
     const hashString = cryptoHash(email.split('@')[1]);
     const pass = await getHash(password);
     console.log({pass});
+    // res.json({"test": "test"})
+    // return
 
     const userData = {
       Username: username,
