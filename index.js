@@ -14,6 +14,8 @@ const postRouter = require('./routes/postRoutes');
 const commentRouter = require('./routes/commentRoutes');
 const reactRouter = require('./routes/reactRoutes');
 const dashboardRouter = require('./routes/dashboardRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
+const chatRoutes = require('./routes/chatRoutes');
 
 require('dotenv').config();
 
@@ -46,6 +48,8 @@ app.use('/api/post/', sessionAuth, postRouter); // Post Routes
 app.use('/api/comment/', sessionAuth, commentRouter); // Comment Routes
 app.use('/api/react/', sessionAuth, reactRouter); // Reaction Routes
 app.use('/api/dashboard/', sessionAuth, dashboardRouter); // Dashboard Routes
+app.use('/api/notification/', sessionAuth, notificationRoutes); // Dashboard Routes
+app.use('/api/chat/', sessionAuth, chatRoutes); // Dashboard Routes
 
 // middleware for handling asynchronous and synchronus errors
 app.use(errorHandler)

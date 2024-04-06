@@ -27,8 +27,15 @@ const NotificationSchema = new Schema({
     },
     RefObject: {
         type: [{
-            RefSchema: 'User' | 'Post' | 'Message' | 'Friend' | 'Comment' | 'Group' | 'Reaction',
-            RefId: mongoose.SchemaType.ObjectId, 
+            RefSchema: {
+                type: String,
+                validate: function (v) {
+                    return ['USER', 'POST', 'MESSAGE', 'FRIEND', 'COMMENT', 'GROUP', 'REACTION'].includes(v);
+                }
+            },
+            RefId: {
+                type: mongoose.SchemaTypes.ObjectId,
+            },
         }],
         required: true,
         default: {
