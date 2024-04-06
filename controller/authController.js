@@ -48,6 +48,7 @@ const usernameController = expressAsyncHandler(async function (req, res) {
   } else {
     const hashString = cryptoHash(email.split('@')[1]);
     const pass = await getHash(password);
+    console.log({pass});
 
     const userData = {
       Username: username,
@@ -55,8 +56,11 @@ const usernameController = expressAsyncHandler(async function (req, res) {
       Password: pass,
       Community: hashString
     }
+    console.log({userData})
 
     const user = await User.create(userData);
+
+    console.log({user})
 
     if (user.id) {
 
