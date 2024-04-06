@@ -12,17 +12,20 @@ const getHash = async (plaintextPassword) => {
     // });});
 
     const hash = bcrypt.hashSync(plaintextPassword, saltRounds);
-    return hash ? (hash).toString() : new Error(`INTERNAL HASHING ERROR: ${hash}`) 
+    return (hash).toString() ?? new Error(`INTERNAL HASHING ERROR: ${hash}`) 
 };
 
 const verifyHash = async (hashPassword, plaintextPassword) => {
-    return new Promise((resolve, reject)=>{
-    bcrypt.compare(plaintextPassword, hashPassword, function(err, result) {
-        if(err){
-            reject(`INTERNAL HASHING ERROR: ${err}`)
-        }
-        resolve(result);
-    });});
+    // return new Promise((resolve, reject)=>{
+    // bcrypt.compare(plaintextPassword, hashPassword, function(err, result) {
+    //     if(err){
+    //         reject(`INTERNAL HASHING ERROR: ${err}`)
+    //     }
+    //     resolve(result);
+    // });});
+
+    const result = bcrypt.compareSync(plaintextPassword, hashPassword);
+    return result ?? new Error(`INTERNAL HASHING ERROR: ${hash}`); 
 }
 
 module.exports = { getHash, verifyHash }

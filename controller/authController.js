@@ -44,15 +44,11 @@ const usernameController = expressAsyncHandler(async function (req, res) {
   })
 
   if (userId) {
-    console.log("error")
     res.status(400);
     throw new Error("Username taken");
   } else {
     const hashString = cryptoHash(email.split('@')[1]);
     const pass = await getHash(password);
-    console.log({pass});
-    // res.json({"test": "test"})
-    // return
 
     const userData = {
       Username: username,
@@ -60,14 +56,10 @@ const usernameController = expressAsyncHandler(async function (req, res) {
       Password: pass,
       Community: hashString
     }
-    console.log({userData})
 
     const user = await User.create(userData);
 
-    console.log({user})
-
     if (user.id) {
-
       const response = await createToken(user._id, user.Username)
       console.log("token response: ", response.message)
       if (response.result) {
