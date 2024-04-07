@@ -12,7 +12,7 @@ const updatePostImpressions = require("../utils/updatePostImpressions");
 const expressAsyncHandler = require('express-async-handler');
 
 const getPosts = expressAsyncHandler(async (req, res) => {
-    const userID = req.query.userId;
+    const userID = req.query.userId ?? res.locals.id;
     const limit = req.query.limit || 18;
     const page = req.query.page || 1;
 

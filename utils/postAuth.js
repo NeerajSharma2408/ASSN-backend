@@ -11,6 +11,8 @@ const isUsersPostAccessible = async (userID, communityUserID) => {
         const communnityUser = await User.findById(communityUserID).select('-Password -Email -Groups');
         const user = await User.findById(userID).select('-Password -Email -Groups');
 
+        if(!communnityUser || !user) throw new Error("INTERNAL SERVER ERROR {USER NOT FOUND}");
+
         const isFriend = await Friend.exists({ $or: [{ Recipient: communityUserID }, { Recipient: userID }, { Requester: communityUserID }, { Requester: userID }] });
         canAccessUserObject[communityUserID] = (communnityUser.Community === user.Community) && (!communnityUser.isPrivateAccount || isFriend)
         postCache.set((userID).toString(), canAccessUserObject, 900)
