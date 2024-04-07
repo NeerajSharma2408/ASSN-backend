@@ -9,7 +9,7 @@ const getAllNotification = expressAsyncHandler( async (req, res)=>{
     const page = req.query.page ?? 1;
 
     const allNotifications = await Notification.find({To: selfId, isDeleted: false});
-    
+
     res.status(200).json({message: "ALL NOTIFICATIONS Fetched", allNotifications}).skip((page - 1) * limit).limit(limit).exec();
 });
 
@@ -28,6 +28,7 @@ const deleteNotification = expressAsyncHandler( async (req, res)=>{
 
     if(!notificationId) throw new Error("notification Id is not Present")
 
+    // mongoose.Types.ObjectId.isValid(any_id) --- to test if id is a valid object_id
     const notificationExists = await Notification.exists({ id: notificationId });
 
     if(!notificationExists) {

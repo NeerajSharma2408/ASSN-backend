@@ -1,3 +1,4 @@
+const { default: mongoose } = require("mongoose");
 const { postClick } = require("../lib/impressionConstants");
 
 const Comment = require("../model/Comment");
@@ -6,7 +7,7 @@ const Post = require("../model/Post");
 const Reaction = require("../model/Reaction");
 const User = require("../model/User");
 
-const { isUsersPostAccessible } = require("../utils/postAuth");
+const { isUsersPostAccessible, hasWriteAccess } = require("../utils/postAuth");
 const updatePostImpressions = require("../utils/updatePostImpressions");
 
 const expressAsyncHandler = require('express-async-handler');
@@ -106,7 +107,14 @@ const updatePost = expressAsyncHandler(async (req, res) => {
     const postID = req.params.postid
     const { caption } = req.body
 
-    const post = await Post.findByIdAndUpdate(postID, { $set: { Caption: caption } }, { new: true })
+    const userHasWriteAccess = await hasWriteAccess(postID, res.locals.id);
+
+    if(!userHasWriteAccess){
+        res.status(400)
+        throw new Error("User Doesn't have write permission for this Post")
+    }
+
+    const post = await Post.findByIdAndUpdate(postID, { $set: { Caption: caption } }, { new: false })
 
     if (post) {
         res.status(200).json({ message: "Post updated Successfully.", post })
@@ -117,6 +125,13 @@ const updatePost = expressAsyncHandler(async (req, res) => {
 
 const deletePost = expressAsyncHandler(async (req, res) => {
     const postID = req.params.postid;
+
+    const userHasWriteAccess = await hasWriteAccess(postID, res.locals.id);
+
+    if(!userHasWriteAccess){
+        res.status(400)
+        throw new Error("User Doesn't have write permission for this Post")
+    }
 
     const post = await Post.findByIdAndDelete(postID)
     let comments = await Comment.find({ Post: postID }).select('_id') || []

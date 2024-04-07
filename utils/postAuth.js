@@ -2,6 +2,7 @@ const Friend = require("../model/Friend");
 
 const NodeCache = require("node-cache");
 const User = require("../model/User");
+const Post = require("../model/Post");
 const postCache = new NodeCache({ stdTTL: 900, checkperiod: 1000 });
 
 const isUsersPostAccessible = async (userID, communityUserID) => {
@@ -20,4 +21,13 @@ const isUsersPostAccessible = async (userID, communityUserID) => {
     return canAccessUserObject[communityUserID]
 }
 
-module.exports = { isUsersPostAccessible }
+const hasWriteAccess = async (postID, communityUserID) => {  
+    if(!mongoose.isValidObjectId(postID)) {
+        throw new Error("Invalid Post ID Provided")
+    }
+    let post = await Post.findById(postID)
+
+    return (post.By.toString() == communityUserID.toString());
+}
+
+module.exports = { isUsersPostAccessible, hasWriteAccess }

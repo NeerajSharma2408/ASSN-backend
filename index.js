@@ -16,6 +16,7 @@ const reactRouter = require('./routes/reactRoutes');
 const dashboardRouter = require('./routes/dashboardRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const ConnectedUsers = require('./lib/connectedUsers');
 
 require('dotenv').config();
 
@@ -75,9 +76,22 @@ app.use('/api/chat/', sessionAuth, chatRoutes); // Dashboard Routes
 app.use(errorHandler)
 
 io.on('connection', (socket)=>{
-    console.log("New User connected", socket)
+    console.log("New User connected", ConnectedUsers);
+    
+    // for testing purpose only
+    // test for different communities are left
+    socket.on('new-user-connected', ({userId, community, toId})=>{
+        ConnectedUsers[userId] = { community, socketId: socket.id }
+        
+        socket.join(community);
+        
+        socket.broadcast.to(community).emit('new-user-broadcasted', ({message: ConnectedUsers[userId], userId, "info": "BROADCASTED MESSAGE"}));
+
+        socket.to(ConnectedUsers[toId]?.socketId).emit('new-user-singleton', ({message: ConnectedUsers[userId], userId, "info": "EMITTED MESSAGE"}));
+    })
 
     socket.on('disconnect', () => {
+        delete ConnectedUsers[socket.id];
         console.log('user disconnected');
     });
 });

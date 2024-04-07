@@ -88,10 +88,21 @@ const updateComment = expressAsyncHandler(async (req, res) => {
 
     const message = req.body.message;
 
+    if(!mongoose.isValidObjectId(postID) || !mongoose.isValidObjectId(commentID)) {
+        throw new Error("Invalid Post or Comment ID Provided")
+    }
+
     const post = await Post.findById(postID);
     
     if (post) {
         const userID = post.By;
+
+        const comment = await Comment.findById(commentID);
+
+        if(comment.By.toString() != res.locals.id.toString()){
+            res.status(400)
+            throw new Error("User Doesn't have write permission for this Comment")
+        }
         
         const canAccessPost = await isUsersPostAccessible(res.locals.id, userID);
         
@@ -110,6 +121,17 @@ const updateComment = expressAsyncHandler(async (req, res) => {
 const deleteComment = expressAsyncHandler(async (req, res) => {
     const postID = req.params.parentId;
     const commentID = req.params.commentId;
+
+    if(!mongoose.isValidObjectId(postID) || !mongoose.isValidObjectId(commentID)) {
+        throw new Error("Invalid Post or Comment ID Provided")
+    }
+
+    const comment = await Comment.findById(commentID);
+
+    if(comment && comment.By.toString() != res.locals.id.toString()){
+        res.status(400)
+        throw new Error("User Doesn't have write permission for this Comment")
+    }
 
     const post = await Post.findById(postID);
     
