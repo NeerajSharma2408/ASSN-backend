@@ -41,10 +41,14 @@ const MessageSchema = new Schema({
         ref: 'Group',
         required: true,
     },
+    isDeleted: {
+        type: Boolean,
+        default: false,
+    }
 },{
     timestamps: true,
 });
 
-MessageSchema.index({InGroup: 1, timestamps: -1})
+MessageSchema.index({InGroup: 1, createdAt: -1})
 
 module.exports = mongoose.model('Message', MessageSchema)

@@ -23,12 +23,25 @@ const GroupSchema = new Schema({
         },
     },
     CreatedBy: {
-        type: mongoose.SchemaType.ObjectId,
+        type: mongoose.SchemaTypes.ObjectId,
         required: true,
     },
     isGroupChat: {
         type: Boolean,
         default: false,
+        required: true,
+    },
+    LastUpdation: {
+        type: {
+            By: {
+                type: mongoose.SchemaTypes.ObjectId,
+                ref: "User"
+            },
+            Message: {
+                type: mongoose.SchemaTypes.ObjectId,
+                ref: "Message"
+            }
+        },
         required: true,
     }
 }, {

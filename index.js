@@ -22,15 +22,35 @@ require('dotenv').config();
 
 
 const app = express();
-app.use(express.json())
-app.use(express.urlencoded( { extended: true } ))
-app.use('/', cors())
+app.use(express.json());
+app.use(express.urlencoded( { extended: true } ));
+app.use('/', cors());
+
+const PORT = process.env.PORT || 3000;
+const DB_URL = process.env.DB_URL
+
+const server = app.listen(PORT, async (err) => {
+    if (err) {
+        console.log("SERVER error: ", err)
+    } else {
+        console.log("SERVER Running at Port: ", PORT)
+        connectDB(DB_URL)
+    }
+})
+
+const io = new Server(server);
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
 }));
+
+// middleware for setting up socket io instance for creating emit events from controller functions
+app.use((req, res, next)=>{
+    req.app = {io};
+    next();
+})
 
 // * important
 // ! deprecated
@@ -53,20 +73,6 @@ app.use('/api/chat/', sessionAuth, chatRoutes); // Dashboard Routes
 
 // middleware for handling asynchronous and synchronus errors
 app.use(errorHandler)
-
-const PORT = process.env.PORT || 3000;
-const DB_URL = process.env.DB_URL
-
-const server = app.listen(PORT, async (err) => {
-    if (err) {
-        console.log("SERVER error: ", err)
-    } else {
-        console.log("SERVER Running at Port: ", PORT)
-        connectDB(DB_URL)
-    }
-})
-
-const io = new Server(server);
 
 io.on('connection', (socket)=>{
     console.log("New User connected", socket)

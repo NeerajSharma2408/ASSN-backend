@@ -46,7 +46,11 @@ const NotificationSchema = new Schema({
     Read: {
         type: Boolean,
         default: false,
-    }
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
+    },
 }, {
     timestamps: true
 })
