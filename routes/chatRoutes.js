@@ -2,6 +2,8 @@ const chatRoutes = require('express').Router();
 
 const { getAllChatHeads, getAllMessage } = require('../controller/chatController');
 
+// !depreciated routes
+
 // GET ALL CHAT HEADS
 chatRoutes.get('/', getAllChatHeads)
 

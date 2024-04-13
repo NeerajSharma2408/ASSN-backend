@@ -3,6 +3,8 @@ const expressAsyncHandler = require("express-async-handler")
 const Message = require('../model/Message')
 const Group = require('../model/Group')
 
+// !depreciated controller
+
 const getAllChatHeads = expressAsyncHandler( async (req, res)=>{
 
     const selfId = res.locals.id;
@@ -12,7 +14,7 @@ const getAllChatHeads = expressAsyncHandler( async (req, res)=>{
     const allChatHeads = await Group.find({ Members: { $eq: selfId } }).skip((page - 1) * limit).limit(limit).exec();
 
     res.status(200).json({message: "ALL CHAT HEAD FOUND", allChatHeads});
-})
+});
 
 const getAllMessage = expressAsyncHandler( async (req, res) => {
 
@@ -36,6 +38,6 @@ const getAllMessage = expressAsyncHandler( async (req, res) => {
     const messages = await Message.find({InGroup: groupId, isDeleted: false}).skip((page - 1) * limit).limit(limit).exec();
 
     res.status(200).json({message: "ALL MESSAGES FETCHED", messages})
-})
+});
 
 module.exports = { getAllChatHeads, getAllMessage }

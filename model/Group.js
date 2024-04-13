@@ -42,6 +42,10 @@ const GroupSchema = new Schema({
                 ref: "Message"
             }
         },
+        default: {
+            By: this.CreatedBy,
+            Message: "Draft"
+        },
         required: true,
     }
 }, {

@@ -49,8 +49,14 @@ const UserSchema = new Schema({
   },
   Groups: {
     type: [{
-      type: mongoose.SchemaTypes.ObjectId,
-      ref: 'Group',
+      GroupID: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: 'Group',
+      },
+      hasLeftGroup: {
+        type: Boolean,
+        default: false
+      }
     }],
     default: [],
   },
