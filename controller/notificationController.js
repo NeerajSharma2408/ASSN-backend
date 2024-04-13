@@ -1,6 +1,9 @@
 const expressAsyncHandler = require("express-async-handler")
 
-const Notification = require('../model/Notification')
+const Notification = require('../model/Notification');
+const ConnectedUsers = require("../lib/connectedUsers");
+const User = require("../model/User");
+const Comment = require("../model/Comment");
 
 const getAllNotification = expressAsyncHandler( async (req, res)=>{
 
@@ -40,6 +43,30 @@ const deleteNotification = expressAsyncHandler( async (req, res)=>{
     res.status(200).json({message: "NOTIFICATION DELETED", deletedNotification})
 });
 
+// SOCKET CONTROLLERS
+const sendCommentNotification = expressAsyncHandler( async (io, userID, comment, postBy)=>{
 
+    if(comment?.By === userID || !io) return;
 
-module.exports = { getAllNotification, deleteAllNotification, deleteNotification }
+    const isReply = comment?.Parent ? true : false;
+    const user = await User.findById(userID).select('Name Username id Avatar');
+    let message = `${user.Username} has Commented on your Post`;
+    io.to(ConnectedUsers[postBy]?.socketId).emit('post-comment-notification', { message, comment, user });
+
+    if(!isReply) return;
+
+    message = `${user.Username} has replied to your Comment`;
+    let parentComment = await Comment.findById(comment?.Parent)
+    io.to(ConnectedUsers[parentComment?.By]?.socketId).emit('comment-reply-notification', { message, comment, user });
+});
+
+const sendReactionNotification = expressAsyncHandler( async (io, userID, reaction, ref, toID)=>{
+
+    if(reaction?.By === userID || !io) return;
+
+    const user = await User.findById(userID).select('Name Username id Avatar');
+    let message = `${user.Username} has Reacted to your ${ref}`;
+    io.to(ConnectedUsers[toID]?.socketId).emit('reaction-notification', { message, reaction, user, ref });
+});
+
+module.exports = { getAllNotification, deleteAllNotification, deleteNotification, sendCommentNotification, sendReactionNotification }

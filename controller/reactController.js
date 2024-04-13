@@ -10,6 +10,8 @@ const Post = require("../model/Post")
 const Message = require("../model/Message")
 const Comment = require("../model/Comment")
 const User = require("../model/User")
+const { default: mongoose } = require("mongoose")
+const { sendReactionNotification } = require("./notificationController")
 
 const toggleReaction = expressAsyncHandler(async (req, res) => {
     const parentID = req.params.parentId
@@ -17,57 +19,60 @@ const toggleReaction = expressAsyncHandler(async (req, res) => {
 
     const { like, reaction, model } = req.body
 
-    let parentExists = true
+    if (parentID && !mongoose.isValidObjectId(parentID)) {
+        res.status(400);
+        throw new Error("Invalid Parent Id sent");
+    }
+
+    let parentDoc = null;
 
     let impression = 0
     switch (model) {
         case "Post":
             impression = postLike
-            parentExists = await Post.exists({'_id': parentID})
+            parentDoc = await Post.findById(parentID)
             break;
-            
-            case "Message":
-            parentExists = await Message.exists({'_id': parentID})
+        case "Message":
+            parentDoc = await Message.findById(parentID)
             break;
-            
-            case "Comment":
+        case "Comment":
             impression = commentLike
-            parentExists = await Comment.exists({'_id': parentID})    
+            parentDoc = await Comment.findById(parentID)
             break;
-    
         default:
-            parentExists = false;
+            parentDoc = false;
             break;
     }
 
-    if(!parentExists){
+    if (!parentDoc) {
         res.status(404)
         throw new Error("Parent Not found")
-    }else{
-        const likePresent = await Reaction.exists({Parent: parentID, By: userID})
-        if(like){
-            if(likePresent){
-                response = await Reaction.findOneAndUpdate({Parent: parentID, By: userID}, {$set: {Reaction: reaction}})
-            }else{
-                const userAvatar = await User.findById(res.locals.id).select("Avatar")
-                updatePostImpressions(parentID, +impression);
-                const likeObj = {
-                    Parent: parentID,
-                    By: userID,
-                    Reaction: reaction,
-                    onModel: model,
-                    Avatar: userAvatar.Avatar
-                }
-                response = await Reaction.create(likeObj)
-            }
-        }else{
-            if(likePresent){
-                updatePostImpressions(parentID, -impression);
-                response = await Reaction.findOneAndDelete({By: userID, Parent: parentID})
-            }
-        }
-        res.status(200).json({message: "Reaction Toggled"})
     }
+    const likePresent = await Reaction.exists({ Parent: parentID, By: userID })
+    let response = null;
+    if (like) {
+        if (likePresent) {
+            response = await Reaction.findOneAndUpdate({ Parent: parentID, By: userID }, { $set: { Reaction: reaction } })
+        } else {
+            const userAvatar = await User.findById(res.locals.id).select("Avatar")
+            updatePostImpressions(parentID, +impression);
+            const likeObj = {
+                Parent: parentID,
+                By: userID,
+                Reaction: reaction,
+                onModel: model,
+                Avatar: userAvatar.Avatar
+            }
+            response = await Reaction.create(likeObj)
+        }
+        sendReactionNotification(req?.app?.io, res?.locals?.id, response, model, parentDoc?.By ?? parentDoc?.Sender);
+    } else {
+        if (likePresent) {
+            updatePostImpressions(parentID, -impression);
+            response = await Reaction.findOneAndDelete({ By: userID, Parent: parentID })
+        }
+    }
+    res.status(200).json({ message: "Reaction Toggled", response })
 })
 
 const getReactions = expressAsyncHandler(async (req, res) => {
@@ -76,9 +81,9 @@ const getReactions = expressAsyncHandler(async (req, res) => {
     const limit = req.query.limit || 50;
     const page = req.query.page || 1;
 
-    const likes = await Reaction.find({Parent: parentId}).skip((page-1)*limit).limit(limit).exec();
+    const likes = await Reaction.find({ Parent: parentId }).skip((page - 1) * limit).limit(limit).exec();
 
-    res.status(200).json({message: "Reactions Found", likes})
+    res.status(200).json({ message: "Reactions Found", likes })
 })
 
 module.exports = { toggleReaction, getReactions }

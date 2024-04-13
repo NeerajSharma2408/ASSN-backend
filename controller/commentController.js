@@ -9,6 +9,8 @@ const { isUsersPostAccessible } = require("../utils/postAuth");
 const expressAsyncHandler = require('express-async-handler');
 const updatePostImpressions = require("../utils/updatePostImpressions");
 const ConnectedUsers = require("../lib/connectedUsers");
+const { sendCommentNotification } = require("./notificationController");
+const { default: mongoose } = require("mongoose");
 
 const getPostComments = expressAsyncHandler(async (req, res) => {
     const postID = req.params.parentId;
@@ -33,6 +35,7 @@ const getPostComments = expressAsyncHandler(async (req, res) => {
             }))
             comments = await allComments;
 
+            // FOR TESTING PURPOSE
             // BROADCAST TO ONE USER
             // req.app.io.to(ConnectedUsers[userID]?.socketId).emit('commentsSeen', {message: `SomeOne ${res.locals.id} Viewed your posts comment`, comments})
 
@@ -63,24 +66,23 @@ const createComment = expressAsyncHandler(async (req, res) => {
         if (canAccessPost) {
             const user = await User.findById(res.locals.id).select("Avatar");
 
-            // TO CHECK IF THE REPLY TO THE COMMENT IS ITSELF A REPLY TO ANOTHER COMMENT, IF SO THEN CHANGE THE PARENT REFERENCE
-            const isReply = await Comment.findById(commentId);
-            if(isReply && isReply.Parent){
-                commentId = isReply.Parent
+            if(commentId && !mongoose.isValidObjectId(commentId)){
+                throw new Error("INVALID COMMENT ID SENT")
             }
-
-            const parentExists = await Comment.exists({_id: commentId});
             
             const comment = {
                 Post: postID,
                 By: res.locals.id,
-                Parent: parentExists ? commentId : null,
+                Parent: commentId ?? null,
                 Message: message,
                 Avatar: user.Avatar
             }
         
-            const response = await Comment.create(comment)
+            const response = await Comment.create(comment);
             updatePostImpressions(postID, postComment);
+
+            sendCommentNotification(req?.app?.io, res.locals.id, response, post.By);
+
             res.status(200).json({ message: "Comment Created", response })
         } else {
             res.status(400).json({ message: "Not Authorized to view Post" })
@@ -115,7 +117,7 @@ const updateComment = expressAsyncHandler(async (req, res) => {
         const canAccessPost = await isUsersPostAccessible(res.locals.id, userID);
         
         if (canAccessPost) {
-            const comment = await Comment.findByIdAndUpdate(commentID, { $set: { Message: message } }, { new: true });
+            const comment = await Comment.findByIdAndUpdate(commentID, { $set: { Message: message } }, { new: false });
 
             res.status(200).json({ message: "Comment Created", comment })
         } else {
