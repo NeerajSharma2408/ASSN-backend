@@ -1,7 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const session = require('express-session')
-const { Server } = require('socket.io')
+const SocketIo = require('socket.io')
 
 const sessionAuth = require('./middleware/sessionAuth');
 const { errorHandler } = require('./middleware/errorHandler');
@@ -17,6 +17,7 @@ const dashboardRouter = require('./routes/dashboardRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const ConnectedUsers = require('./lib/connectedUsers');
+const expressAsyncHandler = require('express-async-handler');
 
 require('dotenv').config();
 
@@ -30,16 +31,16 @@ app.use('/', cors());
 const PORT = process.env.PORT || 3000;
 const DB_URL = process.env.DB_URL
 
-const server = app.listen(PORT, async (err) => {
+const server = app.listen(PORT, expressAsyncHandler(async (err) => {
     if (err) {
         console.log("SERVER error: ", err)
     } else {
         console.log("SERVER Running at Port: ", PORT)
         connectDB(DB_URL)
     }
-})
+}));
 
-const io = new Server(server);
+const io = SocketIo(server);
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
@@ -76,18 +77,19 @@ app.use('/api/chat/', sessionAuth, chatRoutes); // Dashboard Routes
 app.use(errorHandler)
 
 io.on('connection', (socket)=>{
-    console.log("New User connected", ConnectedUsers);
+    // console.log("New User connected", ConnectedUsers);
     
     // for testing purpose only
     // test for different communities are left
     socket.on('new-user-connected', ({userId, community, toId})=>{
         ConnectedUsers[userId] = { community, socketId: socket.id }
-        
         socket.join(community);
         
-        socket.broadcast.to(community).emit('new-user-broadcasted', ({message: ConnectedUsers[userId], userId, "info": "BROADCASTED MESSAGE"}));
+        // to send to all members in a room
+        // socket.broadcast.to(community).emit('new-user-broadcasted', ({message: ConnectedUsers[userId], userId, "info": "BROADCASTED MESSAGE"}));
 
-        socket.to(ConnectedUsers[toId]?.socketId).emit('new-user-singleton', ({message: ConnectedUsers[userId], userId, "info": "EMITTED MESSAGE"}));
+        // to send to the given socket id member
+        // socket.to(ConnectedUsers[toId]?.socketId).emit('new-user-singleton', ({message: ConnectedUsers[userId], userId, "info": "EMITTED MESSAGE"}));
     })
 
     socket.on('disconnect', () => {

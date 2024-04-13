@@ -8,6 +8,7 @@ const { isUsersPostAccessible } = require("../utils/postAuth");
 
 const expressAsyncHandler = require('express-async-handler');
 const updatePostImpressions = require("../utils/updatePostImpressions");
+const ConnectedUsers = require("../lib/connectedUsers");
 
 const getPostComments = expressAsyncHandler(async (req, res) => {
     const postID = req.params.parentId;
@@ -25,12 +26,19 @@ const getPostComments = expressAsyncHandler(async (req, res) => {
         if (canAccessComments) {
             let comments = await Comment.find({ Post: postID, Parent: commentID || null }).select('-Post').skip((page - 1) * limit).limit(limit).exec();
             updatePostImpressions(postID, commentID ? getPostCommentReplies : getPostComment);
-            comments = Promise.all(comments.map(async (comment) => {
+            let allComments = Promise.all(comments.map(async (comment) => {
                 const totalLikes = await Reaction.countDocuments({ Parent: comment.id });
                 const totalReplies = await Comment.countDocuments({ Post: postID, Parent: comment.id });
                 return { comment, totalLikes, totalReplies }
             }))
-            comments = await comments
+            comments = await allComments;
+
+            // BROADCAST TO ONE USER
+            // req.app.io.to(ConnectedUsers[userID]?.socketId).emit('commentsSeen', {message: `SomeOne ${res.locals.id} Viewed your posts comment`, comments})
+
+            // BROADCAST TO ALL USERS IN A ROOM EXCEPT CURRENT USER
+            // req.app.io.to(ConnectedUsers[userID]?.community).except(ConnectedUsers[userID]?.socketId).emit('hazratHazratHazrat', {message: `${res.locals.id} Viewed ${post.By} posts comment`, comments})
+
             res.status(200).json({ message: "Comments Found", comments })
         } else {
             res.status(400).json({ message: "No Comments Found or not Authorized to view Post" })

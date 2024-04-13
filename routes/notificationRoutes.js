@@ -11,6 +11,6 @@ notificationRoutes.delete('/', deleteAllNotification)
 // DELETE ONE NOTIFICATION
 notificationRoutes.delete('/:notificationId', deleteNotification)
 
-// CREATE NOTIFICATION
+// CREATE NOTIFICATION CONTROLLERS
 
 module.exports = notificationRoutes
