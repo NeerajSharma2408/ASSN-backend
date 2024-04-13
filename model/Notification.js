@@ -16,13 +16,14 @@ const NotificationSchema = new Schema({
     Type: {
         type: Number,
         enum: [
-            0,  // Sent you a Friend Request
-            1,  // Accepted your Friend Request
-            2,  // Sent you a message
-            3,  // Commented on your Post
-            4,  // Replied to your comment
-            5,  // Reacted to your post
-            6   // Reacted your comment
+            'friend_request_sent',  // Sent you a Friend Request
+            'friend_request_accepted',  // Accepted your Friend Request
+            'sent_message',  // Sent you a message
+            'commented_on_post',  // Commented on your Post
+            'replied_to_comment',  // Replied to your comment
+            'reacted_to_post',  // Reacted to your post
+            'reacted_to_comment',   // Reacted to your comment
+            'reacted_to_message'   // Reacted to your Message
         ],
     },
     RefObject: {
@@ -43,7 +44,11 @@ const NotificationSchema = new Schema({
             RefId: this.From ,
         },
     },
-    Read: {
+    Message: {
+        type: String,
+        required: true,
+    },
+    isRead: {
         type: Boolean,
         default: false,
     },
