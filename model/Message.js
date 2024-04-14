@@ -10,7 +10,7 @@ const MessageSchema = new Schema({
     },
     Receiver: {
         type: mongoose.SchemaTypes.ObjectId,
-        ref: 'User',
+        ref: 'Group',
         required: true,
     },
     Message: {
@@ -28,6 +28,7 @@ const MessageSchema = new Schema({
     Parent: {
         type: mongoose.SchemaTypes.ObjectId,
         ref: 'Message',
+        default: null,
     },
     Reaction: {
         type: [{
@@ -44,6 +45,10 @@ const MessageSchema = new Schema({
     isDeleted: {
         type: Boolean,
         default: false,
+    },
+    isUpdated: {
+        type: Boolean,
+        default: false
     }
 },{
     timestamps: true,

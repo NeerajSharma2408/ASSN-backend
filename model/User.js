@@ -56,7 +56,11 @@ const UserSchema = new Schema({
       hasLeftGroup: {
         type: Boolean,
         default: false
-      }
+      },
+      hasDeletedGroup: {
+        type: Boolean,
+        default: false,
+      },
     }],
     default: [],
   },

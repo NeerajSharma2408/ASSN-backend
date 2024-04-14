@@ -18,7 +18,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 // const ConnectedUsers = require('./lib/connectedUsers');
 const expressAsyncHandler = require('express-async-handler');
-const { disconnected, getChatHeads, getChatMessages, newUserConnected } = require('./services/sockets');
+const { disconnected, getChatHeads, getChatMessages, newUserConnected, sendMessage, updateMessage, deleteMessage, deleteGroup, createGroup, leaveGroup } = require('./services/sockets');
 
 require('dotenv').config();
 
@@ -82,7 +82,7 @@ io.on('connection', async (socket) => {
     
     // Event handler for new user connected
     socket.on('new-user-connected', ({ userID, community, toId })=>{
-        newUserConnected({ socket, userID, community, toId })
+        newUserConnected(socket, userID, community, toId)
     });
 
     // Event handler for getting chat heads  
@@ -93,6 +93,30 @@ io.on('connection', async (socket) => {
     // Event handler for getting chat messages
     socket.on('get-chat-messages', ({groupID})=>{
         getChatMessages(socket, userID, groupID, limit=50, page=1);
+    })
+
+    socket.on('create-group', ({userID, memberIDs, message, Name})=>{
+        createGroup(socket, userID, memberIDs, message, Name);
+    })
+
+    socket.on('leave-group', ({userID, groupID, removedBy})=>{
+        leaveGroup(socket, userID, groupID, removedBy);
+    })
+
+    socket.on('delete-group', ({userID, groupID})=>{
+        deleteGroup(socket, userID, groupID);
+    })
+
+    socket.on('send-message', ({message, userID, groupID, replyTo})=>{
+        sendMessage(socket, message, userID, groupID, replyTo);
+    })
+
+    socket.on('update-message', ({message, messageID, userID, groupID})=>{
+        updateMessage(socket, message, messageID, userID, groupID);
+    })
+
+    socket.on('delete-message', ({messageID, userID, groupID})=>{
+        deleteMessage(socket, messageID, userID, groupID);
     })
 
     socket.on('disconnect', ()=>{
