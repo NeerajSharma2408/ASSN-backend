@@ -6,6 +6,7 @@ const User = require("../model/User");
 
 const ConnectedUsers = require("../lib/connectedUsers");
 const { userHaveMessageWritePermission } = require("../utils/chatAuth");
+const Notification = require("../model/Notification");
 
 const newUserConnected = async (socket, userID, community, toId) => {
     try {
@@ -95,10 +96,19 @@ const createGroup = async (socket, createdBy, memberIDs, message, Name) => {
 
         if(!group) throw new Error("Unable to create Group");
 
-        memberIDs?.map((memberID)=>{
+        memberIDs?.map(async (memberID)=>{
             User.findByIdAndUpdate(memberID, { $set: {Groups: { $push: {Group: group.id} }} });
-            // HERE CREATE A NEW NOTIFICTAION SCHEMA ENTRY
-            socket.to(ConnectedUsers[memberID]?.socketId).emit("added-to-group", { message: "YOU HAVE BEEN ADDED TO A GROUP", group });
+            const notificationDoc = await Notification.create({
+                From: createdBy,
+                To: memberID,
+                Type: 8,
+                RefObject: {
+                    RefSchema: 'Group',
+                    RefId: group.id
+                },
+                Message: `You have been added to a group by ${createdByUser.Username}`
+            });
+            socket.to(ConnectedUsers[memberID]?.socketId).emit("added-to-group", { message: "YOU HAVE BEEN ADDED TO A GROUP", group, notificationDoc });
         });
         
         if(message) sendMessage(socket, message, createdBy, group.id);
@@ -131,13 +141,23 @@ const leaveGroup = async (socket, userID, groupID, removedBy) => {
         group = await Group.findByIdAndUpdate(group.id, { $pull: { Members: removedUser.id } });
         removedUser = await User.findByIdAndUpdate(userID, { $pull: { Group: groupID } });
 
-        if(!removedByUser){
-            // HERE CREATE A NEW NOTIFICTAION SCHEMA ENTRY
+        let notificationDoc = null;
+        if(removedByUser){
+            notificationDoc = await Notification.create({
+                From: removedByUser.id,
+                To: removedUser.id,
+                Type: 9,
+                RefObject: {
+                    RefSchema: 'Group',
+                    RefId: group.id
+                },
+                Message: `You have been removed from the group ${group.Name} by ${createdByUser.Username}`
+            });
         }
 
         socket.leave(groupID);
         
-        socket.to(groupID).emit("left-group", { message: removedByUser ? `${removedUser.Username} have been removed by ${removedByUser.Username}` : `You have left the group`, group, removedUser, removedByUser });
+        socket.to(groupID).emit("left-group", { message: removedByUser ? `${removedUser.Username} have been removed by ${removedByUser.Username}` : `You have left the group`, group, removedUser, removedByUser, notificationDoc });
 
     } catch (error) {
         console.log(error)

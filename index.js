@@ -16,7 +16,6 @@ const reactRouter = require('./routes/reactRoutes');
 const dashboardRouter = require('./routes/dashboardRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const chatRoutes = require('./routes/chatRoutes');
-// const ConnectedUsers = require('./lib/connectedUsers');
 const expressAsyncHandler = require('express-async-handler');
 const { disconnected, getChatHeads, getChatMessages, newUserConnected, sendMessage, updateMessage, deleteMessage, deleteGroup, createGroup, leaveGroup } = require('./services/sockets');
 
@@ -95,30 +94,37 @@ io.on('connection', async (socket) => {
         getChatMessages(socket, userID, groupID, limit=50, page=1);
     })
 
+    // Event handler for creating group
     socket.on('create-group', ({userID, memberIDs, message, Name})=>{
         createGroup(socket, userID, memberIDs, message, Name);
     })
 
+    // Event handler for leaving group
     socket.on('leave-group', ({userID, groupID, removedBy})=>{
         leaveGroup(socket, userID, groupID, removedBy);
     })
 
+    // Event handler for deleting group
     socket.on('delete-group', ({userID, groupID})=>{
         deleteGroup(socket, userID, groupID);
     })
 
+    // Event handler for sending chat messages
     socket.on('send-message', ({message, userID, groupID, replyTo})=>{
         sendMessage(socket, message, userID, groupID, replyTo);
     })
 
+    // Event handler for updating chat messages
     socket.on('update-message', ({message, messageID, userID, groupID})=>{
         updateMessage(socket, message, messageID, userID, groupID);
     })
 
+    // Event handler for deleting chat messages
     socket.on('delete-message', ({messageID, userID, groupID})=>{
         deleteMessage(socket, messageID, userID, groupID);
     })
 
+    // Event handler for default disconnection
     socket.on('disconnect', ()=>{
         disconnected(socket)
     });

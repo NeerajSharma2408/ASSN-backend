@@ -66,7 +66,27 @@ const searchCommunity = expressAsyncHandler(async (req, res) => {
 })
 
 const updateProfile = expressAsyncHandler(async (req, res) => {
-    res.status(200).json({message: "update profile route"})
+    const userID = res.locals.id;
+
+    const {Name, DOB, Gender, Avatar, Bio, isPrivateAccount} = req.body;
+
+    const user = await User.findById(userID);
+
+    if(!user){
+        throw new Error("User Not Found");
+    }
+
+    const userObj = {
+        Name: Name ?? user.Name,
+        DOB: DOB ?? user.DOB, 
+        Gender: Gender ?? user.Gender, 
+        Avatar: Avatar ?? user.Avatar, 
+        Bio: Bio ?? user.Bio, 
+        isPrivateAccount: isPrivateAccount ?? user.isPrivateAccount
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userID, userObj);
+    res.status(200).json({message: "User Updated", updatedUser});
 })
 
 module.exports = { getUser, searchCommunity, searchFriends, updateProfile }

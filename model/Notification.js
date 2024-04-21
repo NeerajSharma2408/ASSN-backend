@@ -23,7 +23,9 @@ const NotificationSchema = new Schema({
             'replied_to_comment',  // Replied to your comment
             'reacted_to_post',  // Reacted to your post
             'reacted_to_comment',   // Reacted to your comment
-            'reacted_to_message'   // Reacted to your Message
+            'reacted_to_message',   // Reacted to your Message
+            'added_to_group',   // Added to Group
+            'removed_from_group',   // Removed from Group
         ],
     },
     RefObject: {

@@ -15,7 +15,6 @@ userRouter.get('/community/:userName', searchCommunity)
 userRouter.get('/friends/:userName', searchFriends)
 
 // Update User Profile
-
 userRouter.patch('/updateProfile', updateProfile)
 
 module.exports = userRouter
