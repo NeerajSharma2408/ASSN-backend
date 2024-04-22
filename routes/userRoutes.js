@@ -8,13 +8,13 @@ userRouter.get('/', getUser)
 // GET OTHER COMMUNITY USERS PROFILE
 userRouter.get('/:userID', getUser)
 
-// Search Community Users
+// SEARCH COMMUNITY USERS
 userRouter.get('/community/:userName', searchCommunity)
 
-// Search User's Friends
+// SAERCH USERS'S FRIENDS
 userRouter.get('/friends/:userName', searchFriends)
 
-// Update User Profile
+// UPDATE USER PROFILE
 userRouter.patch('/updateProfile', updateProfile)
 
 module.exports = userRouter

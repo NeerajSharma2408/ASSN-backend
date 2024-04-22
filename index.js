@@ -18,6 +18,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const expressAsyncHandler = require('express-async-handler');
 const { disconnected, getChatHeads, getChatMessages, newUserConnected, sendMessage, updateMessage, deleteMessage, deleteGroup, createGroup, leaveGroup } = require('./services/sockets');
+const friendRouter = require('./routes/friendRoutes');
 
 require('dotenv').config();
 
@@ -66,6 +67,7 @@ app.get('/api/', (req, res) => {
 // API ROUTES
 app.use('/api/auth/', authRoutes); // Authentication Routes
 app.use('/api/user/', sessionAuth, userRouter); // User Routes
+app.use('/api/friend/', sessionAuth, friendRouter); // Friend Routes
 app.use('/api/post/', sessionAuth, postRouter); // Post Routes
 app.use('/api/comment/', sessionAuth, commentRouter); // Comment Routes
 app.use('/api/react/', sessionAuth, reactRouter); // Reaction Routes
