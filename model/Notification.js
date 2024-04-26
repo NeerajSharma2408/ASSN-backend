@@ -18,6 +18,7 @@ const NotificationSchema = new Schema({
         enum: [
             'friend_request_sent',  // Sent you a Friend Request
             'friend_request_accepted',  // Accepted your Friend Request
+            'friend_request_rejected',  // Rejected your Friend Request
             'sent_message',  // Sent you a message
             'commented_on_post',  // Commented on your Post
             'replied_to_comment',  // Replied to your comment

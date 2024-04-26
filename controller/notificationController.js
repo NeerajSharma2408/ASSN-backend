@@ -108,4 +108,29 @@ const sendReactionNotification = expressAsyncHandler( async (io, userID, reactio
     io.to(ConnectedUsers[toID]?.socketId).emit('reaction-notification', { reaction, user, ref, ReactNotification });
 });
 
-module.exports = { getAllNotification, deleteAllNotification, deleteNotification, sendCommentNotification, sendReactionNotification }
+const sendRequestNotification = expressAsyncHandler( async (io, userID, request, toID, type) => {
+    if(request?.Recipient === userID || !io) return;
+
+    const user = await User.findById(userID).select('Name Username id Avatar');
+    let message = type === 'accept' ? 
+        `${user.Username} has accepted your friend Request` :
+        type === 'add' ? 
+            `${user.Username} has sent you a friend Request` : 
+            `${user.Username} has declined your a friend Request`;
+
+    let notificationObj = {
+        From: userID,
+        To: request?.Recipient,
+        Type: type === 'accept' ? 1 : type === 'add' ? 0 : 2,
+        RefObject: {
+            RefSchema: 'Friend',
+            RefId: request.id
+        },
+        message
+    }
+    let RequestNotification = await Notification.create(notificationObj);
+
+    io.to(ConnectedUsers[toID]?.socketId).emit('request-notification', { request, user, RequestNotification });
+});
+
+module.exports = { getAllNotification, deleteAllNotification, deleteNotification, sendCommentNotification, sendReactionNotification, sendRequestNotification }
