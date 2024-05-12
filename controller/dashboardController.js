@@ -6,7 +6,7 @@ const getTimeline = expressAsyncHandler( async(req, res) => {
     const userId = res.locals.id;
     const friends = await Friend.find({$and: [{status: 3}, {$or: [{Requester: userId}, {Recipient: userId}]}]}).select('id');
     const friendsId = friends.map(friend => { return friend.id } );
-    const posts = await Post.find({By: {$in: friendsId}}).select('-Community').sort({Impressions: -1});
+    const posts = await Post.find({By: {$in: friendsId}}).select('-Community').sort({createdAt: -1});
 
     if(!posts || Array.isArray(posts) && posts.length === 0){
         res.status(404);

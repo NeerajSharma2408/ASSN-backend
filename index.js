@@ -73,7 +73,7 @@ app.use('/api/comment/', sessionAuth, commentRouter); // Comment Routes
 app.use('/api/react/', sessionAuth, reactRouter); // Reaction Routes
 app.use('/api/dashboard/', sessionAuth, dashboardRouter); // Dashboard Routes
 app.use('/api/notification/', sessionAuth, notificationRoutes); // Dashboard Routes
-app.use('/api/chat/', sessionAuth, chatRoutes); // Dashboard Routes
+app.use('/api/chat/', sessionAuth, chatRoutes); // Chat Routes
 
 // middleware for handling asynchronous and synchronus errors
 app.use(errorHandler)

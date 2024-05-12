@@ -30,7 +30,7 @@ const NotificationSchema = new Schema({
         ],
     },
     RefObject: {
-        type: [{
+        type: {
             RefSchema: {
                 type: String,
                 validate: function (v) {
@@ -40,7 +40,7 @@ const NotificationSchema = new Schema({
             RefId: {
                 type: mongoose.SchemaTypes.ObjectId,
             },
-        }],
+        },
         required: true,
         default: {
             RefSchema: 'User',

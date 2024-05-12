@@ -15,10 +15,10 @@ friendRouter.get('/request', getRequests)
 friendRouter.post('/request/add/:user', addRequest)
 
 // ACCEPT FRIEND REQUEST
-friendRouter.post('/request/accept/:request', acceptRequest)
+friendRouter.patch('/request/accept/:request', acceptRequest)
 
 // REJECT FRIEND REQUEST
-friendRouter.post('/request/remove/:request', rejectRequest)
+friendRouter.patch('/request/remove/:request', rejectRequest)
 
 // DELETE FRIEND REQUEST
 friendRouter.delete('/request/:request', deleteRequest)

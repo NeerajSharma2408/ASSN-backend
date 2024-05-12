@@ -1,6 +1,9 @@
 const chatRoutes = require('express').Router();
 
-const { getAllChatHeads, getAllMessage } = require('../controller/chatController');
+const { getAllChatHeads, getAllMessage, getOneLiners } = require('../controller/chatController');
+
+// GET A BUNCH OF ICE BREAKERS FOR STARTING A NEW CONVERSATION
+chatRoutes.get('/one-liners/:user', getOneLiners);
 
 // !depreciated routes
 
