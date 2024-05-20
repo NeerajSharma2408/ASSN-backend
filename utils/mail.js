@@ -6,7 +6,7 @@ const mailHandler = async (email, otp)=>{
         port: 587,
         auth: {
             user: "mydevtestid@gmail.com",
-            pass: "ortnbjchavphkcmw",
+            pass: process.env.NODEMAILER_GMAILPASS,
         },
     });
 
