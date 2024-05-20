@@ -27,7 +27,10 @@ require('dotenv').config();
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/', cors());
+app.use('/', cors(
+{origin: process.env.CLIENT_URL,
+credentials: true,}
+));
 
 const PORT = process.env.PORT || 3000;
 const DB_URL = process.env.DB_URL
@@ -65,15 +68,15 @@ app.get('/api/', (req, res) => {
     res.status(200).json({ message: "APP ROOTs" })
 })
 // API ROUTES
-app.use('/api/auth/', authRoutes); // Authentication Routes
-app.use('/api/user/', sessionAuth, userRouter); // User Routes
-app.use('/api/friend/', sessionAuth, friendRouter); // Friend Routes
-app.use('/api/post/', sessionAuth, postRouter); // Post Routes
-app.use('/api/comment/', sessionAuth, commentRouter); // Comment Routes
-app.use('/api/react/', sessionAuth, reactRouter); // Reaction Routes
-app.use('/api/dashboard/', sessionAuth, dashboardRouter); // Dashboard Routes
-app.use('/api/notification/', sessionAuth, notificationRoutes); // Dashboard Routes
-app.use('/api/chat/', sessionAuth, chatRoutes); // Chat Routes
+app.use('/api/auth', authRoutes); // Authentication Routes
+app.use('/api/user', sessionAuth, userRouter); // User Routes
+app.use('/api/friend', sessionAuth, friendRouter); // Friend Routes
+app.use('/api/post', sessionAuth, postRouter); // Post Routes
+app.use('/api/comment', sessionAuth, commentRouter); // Comment Routes
+app.use('/api/react', sessionAuth, reactRouter); // Reaction Routes
+app.use('/api/dashboard', sessionAuth, dashboardRouter); // Dashboard Routes
+app.use('/api/notification', sessionAuth, notificationRoutes); // Dashboard Routes
+app.use('/api/chat', sessionAuth, chatRoutes); // Chat Routes
 
 // middleware for handling asynchronous and synchronus errors
 app.use(errorHandler)
