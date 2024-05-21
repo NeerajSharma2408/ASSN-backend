@@ -22,14 +22,7 @@ const ReactionSchema = new Schema({
     },
     Reaction: {
         type: String,
-        enum: [
-            'THUMBS UP',
-            'HEART',
-            'SHOCKED',
-            'ANGRY',
-            'CLAP',
-        ],
-        default: 'THUMBS UP'
+        required: true,
     },
 },{
     timestamps: true,

@@ -1,6 +1,7 @@
 const express = require('express')
 const cors = require('cors')
 const session = require('express-session')
+const cookieParser = require('cookie-parser')
 const SocketIo = require('socket.io')
 const cookieParser = require("cookie-parser");
 
@@ -28,11 +29,12 @@ require('dotenv').config();
 const app = express();
 app.use(cookieParser())
 app.use(express.json());
+app.use(cookieParser())
 app.use(express.urlencoded({ extended: true }));
-app.use('/', cors(
-{origin: process.env.CLIENT_URL,
-credentials: true}
-));
+app.use('/', cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true
+}));
 
 const PORT = process.env.PORT || 3000;
 const DB_URL = process.env.DB_URL
@@ -52,6 +54,7 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
+    cookie: {}
 }));
 
 // middleware for setting up socket io instance for creating emit events from controller functions
