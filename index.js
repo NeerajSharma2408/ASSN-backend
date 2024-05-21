@@ -3,7 +3,6 @@ const cors = require('cors')
 const session = require('express-session')
 const cookieParser = require('cookie-parser')
 const SocketIo = require('socket.io')
-const cookieParser = require("cookie-parser");
 
 const sessionAuth = require('./middleware/sessionAuth');
 const { errorHandler } = require('./middleware/errorHandler');
@@ -27,7 +26,6 @@ require('dotenv').config();
 
 
 const app = express();
-app.use(cookieParser())
 app.use(express.json());
 app.use(cookieParser())
 app.use(express.urlencoded({ extended: true }));
