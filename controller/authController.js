@@ -14,7 +14,6 @@ const mailController = expressAsyncHandler(async (req, res) => {
 
   if (!otp) {
     const otp = (Math.round(Math.random() * (1000000 - 100000 - 1)) + 100000);
-
     const info = await mailHandler(email, otp);
     await writeHandler(email, otp, info.messageId);
 
@@ -24,7 +23,7 @@ const mailController = expressAsyncHandler(async (req, res) => {
       return res.status(400).json({ mailSent: false, message: "There Occured an Error... Try Again" })
     }
   } else {
-
+   
     const authData = await authHandler(email, otp);
 
     if (authData.confirmed) {
@@ -61,11 +60,17 @@ const usernameController = expressAsyncHandler(async function (req, res) {
 
     if (user.id) {
       const response = await createToken(user._id, user.Username)
-      console.log("token response: ", response.message)
       if (response.result) {
-        req.session.userID = user._id
-        req.session.username = user.Username
-        req.session.loggedIn = true
+        res.cookie("universe_auth_token", {
+          "userID": user._id,
+          "username": user.Username,
+          "loggedIn": true
+        }, {
+          httpOnly: true,
+          sameSite:process.env.NODE_ENV === "production" ? "none":undefined,
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 86400000,
+        });
 
         user['Password'] = "PASSWORD WONT BE DISCLOSED"
         res.status(200).json(user)
@@ -91,15 +96,18 @@ const login = expressAsyncHandler(async function (req, res) {
     if (auth) {
 
       const response = await createToken(user._id, user.Username)
-      console.log("token response: ", response.message)
       if (response.result) {
-        // SESSION CREATED
-        req.session.userID = user._id
-        req.session.username = user.Username
-        req.session.loggedIn = true
-
+        res.cookie("universe_auth_token", {
+          "userID": user._id,
+          "username": user.Username,
+          "loggedIn": true
+        }, {
+          httpOnly: true,
+          sameSite:process.env.NODE_ENV === "production" ? "none":undefined,
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 86400000,
+        });
         user.Password = "Can't Reveal Password"
-
         res.status(200).json(user)
       } else {
         throw new Error("Unable to create Token")
@@ -148,12 +156,18 @@ const resetpass = expressAsyncHandler(async function (req, res) {
     const user = await User.findOne({ Email: email })
 
     const response = await createToken(user._id, user.Username)
-    console.log("token response: ", response.message)
     if (response.result) {
       // SESSION CREATED
-      req.session.userID = user._id
-      req.session.username = user.Username
-      req.session.loggedIn = true
+      res.cookie("universe_auth_token", {
+        "userID": user._id,
+        "username": user.Username,
+        "loggedIn": true
+      }, {
+        httpOnly: true,
+        sameSite:process.env.NODE_ENV === "production" ? "none":undefined,
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 86400000,
+      });
       
       const pass = await getHash(password)
       const updatedUser = await User.findOneAndUpdate({ Email: email }, { $set: { Password: pass } }, { new: false, select: '-Password' })
@@ -166,15 +180,20 @@ const resetpass = expressAsyncHandler(async function (req, res) {
 })
 
 const logout = expressAsyncHandler(async function (req, res) {
-
-  const id = req.session.userID ? req.session.userID : req.body.id
+  const id = new ObjectId(req.cookies["universe_auth_token"].userID) || req.body;
   if (!id) {
     res.status(400).json({ message: "ID neither present in session nor in body" })
   } else {
     deleteToken(id)
-    req.session.destroy()
+    res.cookie("universe_auth_token","",{
+      sameSite:process.env.NODE_ENV === "production" ? "none":undefined,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 1,
+    });
     res.status(200).json({ message: "SESSION DESTROYED" })
   }
 })
+
+
 
 module.exports = { mailController, usernameController, login, resetpass, logout };

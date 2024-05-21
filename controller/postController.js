@@ -82,12 +82,13 @@ const getPost = expressAsyncHandler(async (req, res) => {
 })
 
 const createPost = expressAsyncHandler(async (req, res) => {
-    const { caption, attachmemts, content } = req.body
+   
+    const { caption, attachments, content } = req.body
 
     const user = await User.findById(res.locals.id).select('_id isPrivateAccount Community')
     let post = {
         Caption: caption,
-        MediaURLs: attachmemts ? attachmemts : [],
+        MediaURLs: attachments ? attachments : [],
         Content: content,
         By: res.locals.id,
         isPrivate: user.isPrivateAccount,

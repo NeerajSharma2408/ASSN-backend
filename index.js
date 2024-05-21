@@ -2,6 +2,7 @@ const express = require('express')
 const cors = require('cors')
 const session = require('express-session')
 const SocketIo = require('socket.io')
+const cookieParser = require("cookie-parser");
 
 const sessionAuth = require('./middleware/sessionAuth');
 const { errorHandler } = require('./middleware/errorHandler');
@@ -25,11 +26,12 @@ require('dotenv').config();
 
 
 const app = express();
+app.use(cookieParser())
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/', cors(
 {origin: process.env.CLIENT_URL,
-credentials: true,}
+credentials: true}
 ));
 
 const PORT = process.env.PORT || 3000;
@@ -75,7 +77,7 @@ app.use('/api/post', sessionAuth, postRouter); // Post Routes
 app.use('/api/comment', sessionAuth, commentRouter); // Comment Routes
 app.use('/api/react', sessionAuth, reactRouter); // Reaction Routes
 app.use('/api/dashboard', sessionAuth, dashboardRouter); // Dashboard Routes
-app.use('/api/notification', sessionAuth, notificationRoutes); // Dashboard Routes
+app.use('/api/notification', sessionAuth, notificationRoutes); // Notification Routes
 app.use('/api/chat', sessionAuth, chatRoutes); // Chat Routes
 
 // middleware for handling asynchronous and synchronus errors
