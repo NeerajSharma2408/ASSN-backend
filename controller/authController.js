@@ -36,7 +36,7 @@ const mailController = expressAsyncHandler(async (req, res) => {
 
 const usernameController = expressAsyncHandler(async function (req, res) {
 
-  const { email, password, username } = req.body;
+  const { email, password, username, name } = req.body;
 
   const userId = await User.exists({
     $or: [{ Username: username }, { Email: email }]
@@ -53,7 +53,8 @@ const usernameController = expressAsyncHandler(async function (req, res) {
       Username: username,
       Email: email,
       Password: pass,
-      Community: hashString
+      Community: hashString,
+      Name: name
     }
 
     const user = await User.create(userData);

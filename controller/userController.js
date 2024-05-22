@@ -5,6 +5,8 @@ const NodeCache = require("node-cache");
 const myCache = new NodeCache({ stdTTL: 600, checkperiod: 660 });
 
 const expressAsyncHandler = require('express-async-handler');
+const { default: mongoose } = require("mongoose");
+const Post = require("../model/Post");
 
 const getUser = expressAsyncHandler(async (req, res) => {
     let userID = req.params.userID
@@ -24,6 +26,20 @@ const getUser = expressAsyncHandler(async (req, res) => {
             res.status(200).json({ message: "User Found", user: user })
         }
     }
+})
+
+const getProfileCount = expressAsyncHandler(async (req, res)=>{
+    const { userID } = req.params;
+
+    if(!userID || !mongoose.isValidObjectId(userID)){
+        res.status(400);
+        throw new Error("Invalid User ID sent")
+    }
+
+    const friendsCount = await Friend.countDocuments({Status: 3, $or: [{Requester: userID}, {Recipient: userID}]});
+    const postCount = await Post.countDocuments({By: userID});
+
+    res.status(200).json({message: "Counts Fetched", postCount, friendsCount})
 })
 
 const searchFriends = expressAsyncHandler(async (req, res) => {
@@ -89,4 +105,4 @@ const updateProfile = expressAsyncHandler(async (req, res) => {
     res.status(200).json({message: "User Updated", updatedUser});
 })
 
-module.exports = { getUser, searchCommunity, searchFriends, updateProfile }
+module.exports = { getUser, getProfileCount, searchCommunity, searchFriends, updateProfile }
