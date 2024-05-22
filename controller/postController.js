@@ -1,8 +1,6 @@
-const { default: mongoose } = require("mongoose");
 const { postClick } = require("../lib/impressionConstants");
 
 const Comment = require("../model/Comment");
-const Friend = require("../model/Friend");
 const Post = require("../model/Post");
 const Reaction = require("../model/Reaction");
 const User = require("../model/User");
@@ -11,6 +9,16 @@ const { isUsersPostAccessible, hasWriteAccess } = require("../utils/postAuth");
 const updatePostImpressions = require("../utils/updatePostImpressions");
 
 const expressAsyncHandler = require('express-async-handler');
+
+// BELOW FUNCTION ADDS USER FIELD IN POST OBJECT BECAUSE AYUSH IS TOO LAZY TO DO HIS WORK :)
+const addUserFieldInPost = async (posts) => {
+    const userPosts = posts.map(async (post, i)=>{
+        const user = await User.findById(post.By).select('Name Username Avatar Bio isPrivateAccount');
+        return {post, user};
+    })
+    const resolvedUserPosts = await Promise.all(userPosts)
+    return resolvedUserPosts;
+}
 
 const getPosts = expressAsyncHandler(async (req, res) => {
     const userID = req.query.userId ?? res.locals.id;
@@ -28,7 +36,8 @@ const getPosts = expressAsyncHandler(async (req, res) => {
             if (communityUser && isUserAccessible) {
                 Posts = await Post.find({ $and: [{ "Community": communityUser?.Community }, { "By": userID }] }).select('-Community').skip((page - 1) * limit).limit(limit).exec();
 
-                res.status(200).json({ message: "User Found", user: communityUser, Posts })
+                const userPosts = await addUserFieldInPost(Posts || [])
+                res.status(200).json({ message: "User Found", user: communityUser, userPosts })
             } else {
                 res.status(400).json({ message: (communityUser ? "Community Mismatched Issue" : "User Not Found"), isUserAccessible })
             }
@@ -46,11 +55,12 @@ const getCommunityPosts = expressAsyncHandler(async (req, res) => {
     let userCommunity = await User.findById(res.locals.id).select('Community')
     userCommunity = userCommunity.Community
 
-    const Posts = await Post.find({ Community: userCommunity, isPrivate: false }).select("-Community").sort({ Impressions: -1 }).skip((page - 1) * limit).limit(limit).exec();
+    let Posts = await Post.find({ Community: userCommunity, isPrivate: false }).select("-Community").sort({ Impressions: -1 }).skip((page - 1) * limit).limit(limit).exec();
     if (Array.isArray(Posts) && Posts.length === 0) {
         res.status(200).json({ message: "There are no Posts currently Associated with your Community", Posts })
     } else {
-        res.status(200).json({ message: "Posts Found", Posts })
+        const userPosts = await addUserFieldInPost(Posts || [])
+        res.status(200).json({ message: "Posts Found", userPosts })
     }
 })
 
@@ -58,7 +68,7 @@ const getPost = expressAsyncHandler(async (req, res) => {
     const postID = req.params.postid;
 
     updatePostImpressions(postID, postClick);
-    const post = await Post.findById(postID)
+    let post = await Post.findById(postID)
 
     if (post) {
         const likes = await Reaction.find({ Parent: postID }).select('-Parent').sort({ "timestamp": -1 });
@@ -70,8 +80,9 @@ const getPost = expressAsyncHandler(async (req, res) => {
             res.status(200).json({ message: "Post Found", post, recentLikes, totalLikes })
         } else {
             let isPostAccessibleByUser = await isUsersPostAccessible(res.locals.id, post.By)
-            if (isPostAccessibleByUser && post) {
-                res.status(200).json({ message: "Post Found", post, likes, totalLikes })
+            if (isPostAccessibleByUser) {
+                const userPost = await addUserFieldInPost([post]);
+                res.status(200).json({ message: "Post Found", userPost: userPost[0], likes, totalLikes })
             } else {
                 res.status(400).json({ message: "Invalid Request. Post Can't Be Accessed." })
             }
