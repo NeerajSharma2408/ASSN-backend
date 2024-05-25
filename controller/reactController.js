@@ -64,12 +64,35 @@ const toggleReaction = expressAsyncHandler(async (req, res) => {
                 Avatar: userAvatar.Avatar
             }
             response = await Reaction.create(likeObj)
+            let docObj = null;
+            switch (model) {
+                case "Post": 
+                    docObj = await Post.findByIdAndUpdate(parentID, {$inc: {CommentsCount: 1}}).exec();
+                case "Message":
+                    docObj = await Message.findByIdAndUpdate(parentID, {$inc: {CommentsCount: 1}}).exec();
+                case "Comment":
+                    docObj = await Comment.findByIdAndUpdate(parentID, {$inc: {CommentsCount: 1}}).exec();
+                default: console.log("INVALID CASE")
+            }
         }
         sendReactionNotification(req?.app?.io, res?.locals?.id, response, model, parentDoc?.By ?? parentDoc?.Sender);
     } else {
         if (likePresent) {
             updatePostImpressions(parentID, -impression);
             response = await Reaction.findOneAndDelete({ By: userID, Parent: parentID })
+            let docObj = null;
+            switch (model) {
+                case "Post": 
+                    docObj = await Post.findByIdAndUpdate(parentID, {$inc: {CommentsCount: -1}}).exec();
+                    break;
+                case "Message":
+                    docObj = await Message.findByIdAndUpdate(parentID, {$inc: {CommentsCount: -1}}).exec();
+                    break;
+                case "Comment":
+                    docObj = await Comment.findByIdAndUpdate(parentID, {$inc: {CommentsCount: -1}}).exec();
+                    break;
+                default: console.log("INVALID CASE");
+            }
         }
     }
     res.status(200).json({ message: "Reaction Toggled", response })

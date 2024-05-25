@@ -8,7 +8,6 @@ const { isUsersPostAccessible } = require("../utils/postAuth");
 
 const expressAsyncHandler = require('express-async-handler');
 const updatePostImpressions = require("../utils/updatePostImpressions");
-const ConnectedUsers = require("../lib/connectedUsers");
 const { sendCommentNotification } = require("./notificationController");
 const { default: mongoose } = require("mongoose");
 
@@ -79,9 +78,11 @@ const createComment = expressAsyncHandler(async (req, res) => {
             }
         
             const response = await Comment.create(comment);
-            updatePostImpressions(postID, postComment);
-
+            
             sendCommentNotification(req?.app?.io, res.locals.id, response, post.By);
+            
+            updatePostImpressions(postID, postComment);
+            const post = await Post.findByIdAndUpdate(postID, {$inc: {CommentsCount: 1}}).exec();
 
             res.status(200).json({ message: "Comment Created", response })
         } else {
@@ -164,6 +165,7 @@ const deleteComment = expressAsyncHandler(async (req, res) => {
             const impression = (likes.length * commentLike) + ((replies.length + 1) * postComment)
         
             updatePostImpressions(postID, -(impression));
+            const post = await Post.findByIdAndUpdate(postID, {$inc: {CommentsCount: -1}}).exec();
         
             res.status(200).json({ message: "Comment Deleted" })
         } else {

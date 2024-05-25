@@ -49,7 +49,17 @@ const MessageSchema = new Schema({
     isUpdated: {
         type: Boolean,
         default: false
-    }
+    },
+    LikesCount: {
+        type: Number,
+        default: 0,
+        validate: {
+            validator: function () {
+                return (this.likes >= 0);
+            },
+            message: "Likes can't be less than 0",
+        },
+    },
 },{
     timestamps: true,
 });
