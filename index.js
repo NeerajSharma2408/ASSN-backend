@@ -66,6 +66,9 @@ app.use((req, res, next) => {
 // ? query
 // todo
 
+// DEV COMMENTS => ENTIRELY CAPITALIZED
+// USER COMMENTS OR MESSAGES => SIMPLE ENGLISH
+
 
 app.get('/api/', (req, res) => {
     res.status(200).json({ message: "APP ROOTs" })

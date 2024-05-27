@@ -3,10 +3,10 @@ const { getFriends, getRequests, removeFriend, rejectRequest, addRequest, accept
 const friendRouter = require('express').Router();
 
 // GET ALL FRIENDS
-friendRouter.get('/friend', getFriends)
+friendRouter.get('/', getFriends)
 
 // REMOVE FRIEND
-friendRouter.delete('/friend/:user', removeFriend)
+friendRouter.delete('/:user', removeFriend)
 
 // GET ALL FRIEND REQUESTS
 friendRouter.get('/request', getRequests)
