@@ -15,7 +15,7 @@ const getUser = expressAsyncHandler(async (req, res) => {
         if (communityUser) {
             const friendObj = await Friend.findOne({ $or: [{ Recipient: res.locals.id }, { Recipient: userID }, { Requester: res.locals.id }, { Requester: userID }] });
 
-            const isFriend = Object.keys(friendObj).length > 0;
+            const isFriend = Object.keys(friendObj || {}).length > 0;
 
             res.status(200).json({ message: "User Found", user: communityUser, isFriend, friendObj })
         } else {
