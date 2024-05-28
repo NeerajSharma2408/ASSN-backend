@@ -42,6 +42,15 @@ const getProfileCount = expressAsyncHandler(async (req, res)=>{
     res.status(200).json({message: "Counts Fetched", postCount, friendsCount})
 })
 
+const getCommunityUsers = expressAsyncHandler(async (req, res)=>{
+
+    const user = await User.findById(res.locals.id).select('Community');
+
+    const communityUsers = await User.find({community: user.Community}).select('-Password -Email');
+
+    res.status(200).json({message: "Community Users Fetched", communityUsers});
+})
+
 const searchFriends = expressAsyncHandler(async (req, res) => {
     const usernameOrName = req.params.userName
     let friends = myCache.get((res.locals.id).toString())
@@ -105,4 +114,4 @@ const updateProfile = expressAsyncHandler(async (req, res) => {
     res.status(200).json({message: "User Updated", updatedUser});
 })
 
-module.exports = { getUser, getProfileCount, searchCommunity, searchFriends, updateProfile }
+module.exports = { getUser, getProfileCount, getCommunityUsers, searchCommunity, searchFriends, updateProfile }

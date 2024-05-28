@@ -1,4 +1,4 @@
-const { getUser, getProfileCount, searchCommunity, searchFriends, updateProfile } = require('../controller/userController')
+const { getUser, getProfileCount, getCommunityUsers, searchCommunity, searchFriends, updateProfile } = require('../controller/userController')
 
 const userRouter = require('express').Router()
 
@@ -10,6 +10,9 @@ userRouter.get('/profile-count/:userID', getProfileCount)
 
 // GET OTHER COMMUNITY USERS PROFILE
 userRouter.get('/:userID', getUser)
+
+// SEARCH COMMUNITY USERS
+userRouter.get('/community', getCommunityUsers)
 
 // SEARCH COMMUNITY USERS
 userRouter.get('/community/:userName', searchCommunity)
