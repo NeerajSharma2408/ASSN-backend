@@ -1,5 +1,13 @@
 const authRoutes = require('express').Router();
 const { mailController, usernameController, login, resetpass, logout } = require('../controller/authController');
+const sessionAuth = require('../middleware/sessionAuth');
+
+
+// VALIDATE TOKEN ROUTE
+authRoutes.get("/validatetoken", sessionAuth, (req, res) => {
+    console.log("inside validate token",res.locals);
+    res.status(200).send({ userId: res.locals.id });
+});
 
 // SIGN UP ROUTES
 authRoutes.post(['/signup/email/', '/signup/otp/'], mailController);

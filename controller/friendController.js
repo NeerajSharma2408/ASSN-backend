@@ -39,9 +39,9 @@ const removeFriend = expressAsyncHandler(async (req, res) => {
 const getRequests = expressAsyncHandler(async (req, res) => {
     const userID = res.locals.id;
     
-    if(mongoose.isValidObjectId(userID)) throw new Error("Invalid user ID");
+    if(userID && !mongoose.isValidObjectId(userID)) throw new Error("Invalid user ID");
 
-    const requests = await Friend.find({ $and : {Recipient: userID, Status: 1}});
+    const requests = await Friend.find({ $and : [{Recipient: userID}, {Status: 1}]});
 
     res.status(200).json({message: "Requests Fetched", requests});
 });
