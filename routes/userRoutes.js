@@ -11,7 +11,7 @@ userRouter.get('/profile-count/:userID', getProfileCount)
 // GET OTHER COMMUNITY USERS PROFILE
 userRouter.get('/:userID', getUser)
 
-// SEARCH COMMUNITY USERS
+// GET ALL COMMUNITY USERS
 userRouter.get('/community', getCommunityUsers)
 
 // SEARCH COMMUNITY USERS

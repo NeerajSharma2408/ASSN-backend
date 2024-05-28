@@ -13,8 +13,11 @@ const getUser = expressAsyncHandler(async (req, res) => {
     if (userID) {
         let communityUser = await User.findById(userID).select("-Password -Email -Community");
         if (communityUser) {
-            const isFriend = await Friend.exists({ $or: [{ Recipient: res.locals.id }, { Recipient: userID }, { Requester: res.locals.id }, { Requester: userID }] });
-            res.status(200).json({ message: "User Found", user: communityUser, isFriend })
+            const friendObj = await Friend.findOne({ $or: [{ Recipient: res.locals.id }, { Recipient: userID }, { Requester: res.locals.id }, { Requester: userID }] });
+
+            const isFriend = Object.keys(friendObj).length == 1;
+
+            res.status(200).json({ message: "User Found", user: communityUser, isFriend, friendObj })
         } else {
             res.status(400).json({ message: "User Not Found" })
         }
