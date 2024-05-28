@@ -180,20 +180,35 @@ const resetpass = expressAsyncHandler(async function (req, res) {
   }
 })
 
-const logout = expressAsyncHandler(async function (req, res) {
-  const id = new ObjectId(req.cookies["universe_auth_token"].userID) || req.body;
-  if (!id) {
-    res.status(400).json({ message: "ID neither present in session nor in body" })
-  } else {
-    deleteToken(id)
+// const logout = expressAsyncHandler(async function (req, res) {
+//   console.log("1",res.locals);
+//  // const id = new ObjectId(req.cookies["universe_auth_token"].userID) || req.body;
+//  const id=res.locals.id;
+//   if (!id) {
+//     res.status(400).json({ message: "ID neither present in session nor in body" })
+//   } else {
+//     deleteToken(id)
+//     res.cookie("universe_auth_token","",{
+//       sameSite:process.env.NODE_ENV === "production" ? "none":undefined,
+//       secure: process.env.NODE_ENV === "production",
+//       maxAge: 1,
+//     });
+//     res.status(200).json({ message: "SESSION DESTROYED" })
+//   }
+// })
+
+const logout=(req, res)=>{
+  console.log("logout controller")
     res.cookie("universe_auth_token","",{
       sameSite:process.env.NODE_ENV === "production" ? "none":undefined,
       secure: process.env.NODE_ENV === "production",
       maxAge: 1,
     });
-    res.status(200).json({ message: "SESSION DESTROYED" })
+    setTimeout(()=>{
+      res.send();
+    },1000)
+    
   }
-})
 
 
 
