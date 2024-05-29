@@ -8,11 +8,11 @@ userRouter.get('/', getUser)
 // GET USER FRIENDS AND POSTS COUNT
 userRouter.get('/profile-count/:userID', getProfileCount)
 
-// GET OTHER COMMUNITY USERS PROFILE
-userRouter.get('/:userID', getUser)
-
 // GET ALL COMMUNITY USERS
 userRouter.get('/community', getCommunityUsers)
+
+// GET OTHER COMMUNITY USERS PROFILE
+userRouter.get('/:userID', getUser)
 
 // SEARCH COMMUNITY USERS
 userRouter.get('/community/:userName', searchCommunity)

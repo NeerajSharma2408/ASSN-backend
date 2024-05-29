@@ -10,12 +10,13 @@ const Post = require("../model/Post");
 
 const getUser = expressAsyncHandler(async (req, res) => {
     let userID = req.params.userID
+    if(userID.toString() === res.locals.id.toString()) userID = null;
     if (userID) {
         let communityUser = await User.findById(userID).select("-Password -Email -Community");
         if (communityUser) {
-            const friendObj = await Friend.findOne({ $or: [{ Recipient: res.locals.id }, { Recipient: userID }, { Requester: res.locals.id }, { Requester: userID }] });
+            const friendObj = await Friend.findOne({ $or: [{ Recipient: res.locals.id, Requester: userID }, { Recipient: userID, Requester: res.locals.id }] });
 
-            const isFriend = Object.keys(friendObj || {}).length > 0;
+            const isFriend = friendObj?.Status === 3;
 
             res.status(200).json({ message: "User Found", user: communityUser, isFriend, friendObj })
         } else {
@@ -49,7 +50,7 @@ const getCommunityUsers = expressAsyncHandler(async (req, res)=>{
 
     const user = await User.findById(res.locals.id).select('Community');
 
-    const communityUsers = await User.find({community: user.Community}).select('-Password -Email');
+    const communityUsers = await User.find({Community: user.Community}).select('-Password -Email');
 
     res.status(200).json({message: "Community Users Fetched", communityUsers});
 })
