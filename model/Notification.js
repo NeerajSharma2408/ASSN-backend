@@ -16,17 +16,17 @@ const NotificationSchema = new Schema({
     Type: {
         type: Number,
         enum: [
-            'friend_request_sent',  // Sent you a Friend Request
-            'friend_request_accepted',  // Accepted your Friend Request
-            'friend_request_rejected',  // Rejected your Friend Request
-            'sent_message',  // Sent you a message
-            'commented_on_post',  // Commented on your Post
-            'replied_to_comment',  // Replied to your comment
-            'reacted_to_post',  // Reacted to your post
-            'reacted_to_comment',   // Reacted to your comment
-            'reacted_to_message',   // Reacted to your Message
-            'added_to_group',   // Added to Group
-            'removed_from_group',   // Removed from Group
+            0,  // 'friend_request_sent',  // Sent you a Friend Request
+            1,  // 'friend_request_accepted',  // Accepted your Friend Request
+            2,  // 'friend_request_rejected',  // Rejected your Friend Request
+            3,  // 'sent_message',  // Sent you a message
+            4,  // 'commented_on_post',  // Commented on your Post
+            5,  // 'replied_to_comment',  // Replied to your comment
+            6,  // 'reacted_to_post',  // Reacted to your post
+            7,  // 'reacted_to_comment',   // Reacted to your comment
+            8,  // 'reacted_to_message',   // Reacted to your Message
+            9,  // 'added_to_group',   // Added to Group
+            10  // 'removed_from_group',   // Removed from Group
         ],
     },
     RefObject: {

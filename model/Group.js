@@ -44,7 +44,7 @@ const GroupSchema = new Schema({
         },
         default: {
             By: this.CreatedBy,
-            Message: "Draft"
+            Message: null
         },
         required: true,
     }

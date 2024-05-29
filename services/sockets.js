@@ -76,11 +76,10 @@ const getChatMessages = async (socket, userID, groupID, limit, page) => {
 
 const createGroup = async (socket, createdBy, memberIDs, message, Name) => {
     try {
-        const memberObjectIDs = memberIDs?.map(memberID=>{
+        memberIDs?.map(memberID=>{
             if (!mongoose.isObjectIdOrHexString(memberID)) {
                 throw new Error("Invalid Member Id provided");
             }
-            return new mongoose.mongo.ObjectId(memberID);
         });
         if (!mongoose.isObjectIdOrHexString(createdBy)) {
             throw new Error("Invalid Created By Id provided");
@@ -88,23 +87,23 @@ const createGroup = async (socket, createdBy, memberIDs, message, Name) => {
         let createdByUser = await User.findById(createdBy);
 
         let groupObj = {
-            Members: memberObjectIDs,
-            Name: Name ?? (memberObjectIDs.length > 2 ? createdByUser.Username+"'s Group" : null),
+            Members: memberIDs,
+            Name: Name ?? (memberIDs.length > 2 ? createdByUser.Username+"'s Group" : null),
             CreatedBy: createdByUser.id,
-            isGroupChat: memberObjectIDs.length > 2
+            isGroupChat: memberIDs.length > 2
         }
         let group = await Group.create(groupObj)
 
         if(!group) throw new Error("Unable to create Group");
 
-        memberObjectIDs?.map(async (memberID)=>{
+        memberIDs?.map(async (memberID)=>{
             User.findByIdAndUpdate(memberID, { $set: {Groups: { $push: {Group: group.id} }} });
             const notificationDoc = await Notification.create({
                 From: createdBy,
                 To: memberID,
                 Type: 8,
                 RefObject: {
-                    RefSchema: 'Group',
+                    RefSchema: 'GROUP',
                     RefId: group.id
                 },
                 Message: `You have been added to a group by ${createdByUser.Username}`
