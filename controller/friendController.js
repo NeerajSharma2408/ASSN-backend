@@ -56,7 +56,7 @@ const rejectRequest = expressAsyncHandler(async (req, res) => {
     
     if(!request) throw new Error("Request not found");
 
-    if(request.Requester !== userID) throw new Error("User Doesn't have Write permissions for this Request");
+    if(request.Requester.toString() !== userID.toString()) throw new Error("User Doesn't have Write permissions for this Request");
 
     const rejectedRequest = await Friend.findByIdAndUpdate(requestID, { Status: 2 });
 
