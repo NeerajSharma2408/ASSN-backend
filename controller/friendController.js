@@ -9,7 +9,7 @@ const getFriends = expressAsyncHandler(async (req, res) => {
 
     if(!mongoose.isValidObjectId(userID)) throw new Error("Invalid user ID");
 
-    const friends = await Friend.find({ $and: [ { $or: { Requester: userID, Recipient: userID } }, { Status: 3 } ] });
+    const friends = await Friend.find({ $and: [ { $or: [{ Requester: userID }, { Recipient: userID }] }, { Status: 3 } ] });
     
     res.status(200).json({message: "Friends Fetched", friends});
 });
@@ -118,7 +118,7 @@ const acceptRequest = expressAsyncHandler( async (req, res) => {
 
     sendRequestNotification(req.app.io, userID, request, request.Requester, "accept");
 
-    res.status(200).json({message: "Request Rejected", acceptedRequest});
+    res.status(200).json({message: "Request Accepted", acceptedRequest});
 });
 
 const deleteRequest = expressAsyncHandler(async (req, res) => {

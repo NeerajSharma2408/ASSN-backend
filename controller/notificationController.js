@@ -4,6 +4,8 @@ const Notification = require('../model/Notification');
 const ConnectedUsers = require("../lib/connectedUsers");
 const User = require("../model/User");
 const Comment = require("../model/Comment");
+const Post = require("../model/Post");
+const Message = require("../model/Message");
 
 const getAllNotification = expressAsyncHandler( async (req, res)=>{
 
@@ -92,10 +94,29 @@ const sendReactionNotification = expressAsyncHandler( async (io, userID, reactio
 
     const user = await User.findById(userID).select('Name Username id Avatar');
     let message = `${user.Username} has Reacted to your ${ref}`;
+    
+    let parent = null;
+    let parentId = null;
+    switch (ref) {
+        case 'Post':
+            parent = await Post.findById(comment?.Parent);
+            parentId = parent?.By;
+            break;
+        case 'Comment':
+            parent = await Comment.findById(comment?.Parent);
+            parentId = parent?.By;
+            break;
+        case 'Message':
+            parent = await Message.findById(comment?.Parent);
+            parentId = parent?.Sender;
+            break;
+        default:
+            break;
+    }
 
     let notificationObj = {
         From: userID,
-        To: parentComment?.By,
+        To: parentId,
         Type: ref === 'Post' ? 5 : (ref === "Comment" ? 6 : 7),
         RefObject: {
             RefSchema: 'Reaction',
