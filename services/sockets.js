@@ -119,7 +119,7 @@ const createGroup = async (socket, createdBy, memberIDs, message, Name) => {
         console.log(error)
         socket.emit('error', { message: error.message });
     }
-}
+};
 
 const leaveGroup = async (socket, userID, groupID, removedBy) => {
     try {
@@ -163,7 +163,7 @@ const leaveGroup = async (socket, userID, groupID, removedBy) => {
         console.log(error)
         socket.emit('error', { message: error.message });
     }
-}
+};
 
 const deleteGroup = async (socket, userID, groupID) => {
     try {
@@ -175,7 +175,7 @@ const deleteGroup = async (socket, userID, groupID) => {
         console.log(error)
         socket.emit('error', { message: error.message });
     }
-}
+};
 
 const sendMessage = async (socket, message, userID, groupID, replyTo) => {
     try {
