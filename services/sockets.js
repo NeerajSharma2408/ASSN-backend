@@ -76,27 +76,28 @@ const getChatMessages = async (socket, userID, groupID, limit, page) => {
 
 const createGroup = async (socket, createdBy, memberIDs, message, Name) => {
     try {
-        memberIDs?.map(memberID=>{
-            if (!mongoose.isValidObjectId(memberID)) {
+        const memberObjectIDs = memberIDs?.map(memberID=>{
+            if (!mongoose.isObjectIdOrHexString(memberID)) {
                 throw new Error("Invalid Member Id provided");
             }
+            return new mongoose.mongo.ObjectId(memberID);
         });
-        if (!mongoose.isValidObjectId(createdBy)) {
+        if (!mongoose.isObjectIdOrHexString(createdBy)) {
             throw new Error("Invalid Created By Id provided");
         }
         let createdByUser = await User.findById(createdBy);
 
         let groupObj = {
-            Members: memberIDs,
-            Name: Name ?? (memberIDs.length > 2 ? createdByUser.Username+"'s Group" : null),
+            Members: memberObjectIDs,
+            Name: Name ?? (memberObjectIDs.length > 2 ? createdByUser.Username+"'s Group" : null),
             CreatedBy: createdByUser.id,
-            isGroupChat: memberIDs.length > 2
+            isGroupChat: memberObjectIDs.length > 2
         }
         let group = await Group.create(groupObj)
 
         if(!group) throw new Error("Unable to create Group");
 
-        memberIDs?.map(async (memberID)=>{
+        memberObjectIDs?.map(async (memberID)=>{
             User.findByIdAndUpdate(memberID, { $set: {Groups: { $push: {Group: group.id} }} });
             const notificationDoc = await Notification.create({
                 From: createdBy,
