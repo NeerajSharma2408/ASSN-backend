@@ -43,7 +43,8 @@ const getChatHeads = async (socket, userID, limit, page) => {
         }
 
         const user = await User.findById(userID);
-        const chatHeads = await Group.find({ id: { $in: user.Groups } }).skip((page - 1) * limit).limit(limit).exec();
+        const grpArray = user.Groups.map(({group, i}) => (group?.GroupID));
+        const chatHeads = await Group.find({ id: { $in: grpArray } }).skip((page - 1) * limit).limit(limit).exec();
 
         // const allChatHeads = await Group.find({ Members: { $eq: userID } }).skip((page - 1) * limit).limit(limit).exec();
 
@@ -98,7 +99,6 @@ const createGroup = async (socket, createdBy, memberIDs, message, Name) => {
 
         memberIDs?.map(async (memberID)=>{
             const user = await User.findByIdAndUpdate(memberID, { $push: {Groups: {GroupID: group.id}} });
-            console.log(user)
             const notificationDoc = await Notification.create({
                 From: createdBy,
                 To: memberID,
