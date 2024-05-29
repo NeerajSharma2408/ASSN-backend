@@ -92,12 +92,13 @@ const createGroup = async (socket, createdBy, memberIDs, message, Name) => {
             CreatedBy: createdByUser.id,
             isGroupChat: memberIDs.length > 2
         }
-        let group = await Group.create(groupObj)
+        let group = await Group.create(groupObj);
 
         if(!group) throw new Error("Unable to create Group");
 
         memberIDs?.map(async (memberID)=>{
-            User.findByIdAndUpdate(memberID, { $set: {Groups: { $push: {Group: group.id} }} });
+            const user = await User.findByIdAndUpdate(memberID, { $push: {Groups: {GroupID: group.id}} });
+            console.log(user)
             const notificationDoc = await Notification.create({
                 From: createdBy,
                 To: memberID,
