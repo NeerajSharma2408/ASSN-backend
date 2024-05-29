@@ -153,7 +153,7 @@ const sendRequestNotification = expressAsyncHandler(async (io, userID, request, 
             To: request?.Recipient,
             Type: type === 'accept' ? 1 : type === 'add' ? 0 : 2,
             RefObject: {
-                RefSchema: 'Friend',
+                RefSchema: 'FRIEND',
                 RefId: request.id
             },
             Message: message

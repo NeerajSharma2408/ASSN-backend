@@ -22,14 +22,15 @@ const removeFriend = expressAsyncHandler(async (req, res) => {
 
     let request = await Friend.findOne({ $and: [
         { $or: [
-            {Requester: userID, Recipient: communityMemberID}, 
-            {Recipient: userID, Requester: communityMemberID}
+            {Requester: userID, Recipient: user}, 
+            {Recipient: userID, Requester: user}
             ]
         }, 
-        {status: 3}
+        {Status: 3}
     ]});
+
     if(request){
-        request = await Friend.findByIdAndUpdate(request.id, {status: 0});
+        request = await Friend.findByIdAndUpdate(request.id, {Status: 0});
         res.status(200).json({message: "Friend Removed", request});
     }else{
         res.status(400).json({message: "Provided user is not a Friend"});
@@ -56,7 +57,7 @@ const rejectRequest = expressAsyncHandler(async (req, res) => {
     
     if(!request) throw new Error("Request not found");
 
-    if(request.Requester.toString() !== userID.toString()) throw new Error("User Doesn't have Write permissions for this Request");
+    if(request.Recipient.toString() !== userID.toString()) throw new Error("User Doesn't have Write permissions for this Request");
 
     const rejectedRequest = await Friend.findByIdAndUpdate(requestID, { Status: 2 });
 

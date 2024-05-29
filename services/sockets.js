@@ -8,6 +8,18 @@ const ConnectedUsers = require("../lib/connectedUsers");
 const { userHaveMessageWritePermission } = require("../utils/chatAuth");
 const Notification = require("../model/Notification");
 
+const populateChatHeads = async(chatHeads) => {
+    const populatedChatHeads = Promise.all(chatHeads.map(async(chatHead, i) => {
+        const populatedMembers = Promise.all(chatHead.Members.map(async(memberID) => {
+            return await User.findById(memberID).select('Name Username Avatar Bio isPrivateAccount');
+        }))
+        chatHead.Members = await populatedMembers;
+        return chatHead
+    }))
+
+    return populatedChatHeads
+}
+
 const newUserConnected = async (socket, userID, community, toId) => {
     try {
         if (!mongoose.isValidObjectId(userID)) {
@@ -46,9 +58,11 @@ const getChatHeads = async (socket, userID, limit, page) => {
         const grpArray = user.Groups.map(({group, i}) => (group?.GroupID));
         const chatHeads = await Group.find({ id: { $in: grpArray } }).skip((page - 1) * limit).limit(limit).exec();
 
+        const populatedChatHeads = await populateChatHeads(chatHeads);
+
         // const allChatHeads = await Group.find({ Members: { $eq: userID } }).skip((page - 1) * limit).limit(limit).exec();
 
-        socket.emit("chat-heads-fetched", { message: "ALL CHAT HEAD FOUND", chatHeads })
+        socket.emit("chat-heads-fetched", { message: "ALL CHAT HEAD FOUND", populatedChatHeads })
     } catch (error) {
         console.log(error)
         socket.emit('error', { message: error.message });
