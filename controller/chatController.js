@@ -17,7 +17,7 @@ const getOneLiners = expressAsyncHandler(async (req, res) => {
     const communityUserID = req.params.user;
 
     // let one_liners = [];
-    // let one_liner_count = 0;
+    let one_liner_count = 0;
 
     const friendPosts = await Post.find({By: communityUserID}).select('Content Caption').limit(20);
     const friendComments = await Comment.find({By: communityUserID}).select('Message').limit(20);

@@ -7,6 +7,11 @@ const { default: mongoose } = require("mongoose");
 const postCache = new NodeCache({ stdTTL: 900, checkperiod: 1000 });
 
 const isUsersPostAccessible = async (userID, communityUserID) => {
+     
+    if(!mongoose.isValidObjectId(userID) && !mongoose.isValidObjectId(communityUserID)) {
+        throw new Error("Invalid Post ID Provided")
+    }
+
     let canAccessUserObject = postCache.get((userID).toString()) || {}
 
     if (!canAccessUserObject || !canAccessUserObject.hasOwnProperty(communityUserID)) {
@@ -23,7 +28,7 @@ const isUsersPostAccessible = async (userID, communityUserID) => {
 }
 
 const hasWriteAccess = async (postID, communityUserID) => {  
-    if(postID && !mongoose.isValidObjectId(postID)) {
+    if(!mongoose.isValidObjectId(postID)) {
         throw new Error("Invalid Post ID Provided")
     }
     let post = await Post.findById(postID)
