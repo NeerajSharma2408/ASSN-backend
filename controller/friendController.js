@@ -7,7 +7,7 @@ const { sendRequestNotification } = require("./notificationController");
 const getFriends = expressAsyncHandler(async (req, res) => {
     const userID = res.locals.id;
 
-    if(mongoose.isValidObjectId(userID)) throw new Error("Invalid user ID");
+    if(!mongoose.isValidObjectId(userID)) throw new Error("Invalid user ID");
 
     const friends = await Friend.find({ $and: [ { $or: { Requester: userID, Recipient: userID } }, { Status: 3 } ] });
     
@@ -18,7 +18,7 @@ const removeFriend = expressAsyncHandler(async (req, res) => {
     const user = req.params.user;
     const userID = res.locals.id;
 
-    if(mongoose.isValidObjectId(user)) throw new Error("Invalid user ID");
+    if(!mongoose.isValidObjectId(user)) throw new Error("Invalid user ID");
 
     let request = await Friend.findOne({ $and: [
         { $or: [
