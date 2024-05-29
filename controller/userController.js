@@ -10,7 +10,7 @@ const Post = require("../model/Post");
 
 const getUser = expressAsyncHandler(async (req, res) => {
     let userID = req.params.userID
-    if(userID.toString() === res.locals.id.toString()) userID = null;
+    if(userID?.toString() === res.locals.id.toString()) userID = null;
     if (userID) {
         let communityUser = await User.findById(userID).select("-Password -Email -Community");
         if (communityUser) {
