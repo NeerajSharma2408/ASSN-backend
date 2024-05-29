@@ -126,7 +126,7 @@ const sendRequestNotification = expressAsyncHandler( async (io, userID, request,
             RefSchema: 'Friend',
             RefId: request.id
         },
-        message
+        Message: message
     }
     let RequestNotification = await Notification.create(notificationObj);
 

@@ -112,7 +112,7 @@ const acceptRequest = expressAsyncHandler( async (req, res) => {
     
     if(!request) throw new Error("Request not found");
 
-    if(request.Recipient !== userID) throw new Error("Invalid Request");
+    if(request.Recipient.toString() !== userID.toString()) throw new Error("Invalid Request");
 
     const acceptedRequest = await Friend.findByIdAndUpdate(requestID, { Status: 3 });
 
@@ -131,7 +131,7 @@ const deleteRequest = expressAsyncHandler(async (req, res) => {
 
     if(!request) throw new Error("Request not found");
 
-    if(request.Requester !== userID) throw new Error("User Doesn't have Write permissions for this Request");
+    if(request.Requester.toString() !== userID.toString()) throw new Error("User Doesn't have Write permissions for this Request");
 
     const deletedRequest = await Friend.findByIdAndDelete(requestID);
 
