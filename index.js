@@ -101,20 +101,16 @@ io.on('connection', async (socket) => {
 
     // Event handler for getting chat heads  
     socket.on('get-chat-heads', ({userID})=>{
-        console.log("get chat heads",userID);
         getChatHeads(socket, userID, limit=15, page=1);
     })
     
     // Event handler for getting chat messages
     socket.on('get-chat-messages', ({userID,groupID})=>{
-        console.log("get-chat-messages",userID,groupID)
         getChatMessages(socket, userID, groupID, limit=50, page=1);
     })
 
     // Event handler for creating group
     socket.on('create-group', ({userID, memberIDs, message, Name})=>{
-        console.log("create group");
-        console.log("userID, memberIDs, message, Name",userID, memberIDs, message, Name);
         createGroup(socket, userID, memberIDs, message, Name);
     })
 
@@ -130,8 +126,6 @@ io.on('connection', async (socket) => {
 
     // Event handler for sending chat messages
     socket.on('send-message', ({message, userID, groupID, replyTo})=>{
-        console.log("send message");
-        console.log("message, userID, groupID, replyTo",message, userID, groupID, replyTo);
         sendMessage(socket, message, userID, groupID, replyTo);
     })
 

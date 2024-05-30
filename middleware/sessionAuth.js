@@ -1,7 +1,8 @@
+const expressAsyncHandler = require('express-async-handler');
 const { verifyToken } = require('../utils/jwt');
 const { ObjectId } = require('mongoose').Types
 
-const sessionAuth = async (req, res, next)=>{
+const sessionAuth = expressAsyncHandler(async (req, res, next)=>{
     // const username = req.session.username
     // const id = new ObjectId(req.session.userID)
     const username = req.cookies["universe_auth_token"]?.username
@@ -24,6 +25,6 @@ const sessionAuth = async (req, res, next)=>{
             res.status(500).json({message: err.message})
         })
     }
-}
+});
 
 module.exports = sessionAuth
