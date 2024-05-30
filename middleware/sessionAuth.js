@@ -4,8 +4,8 @@ const { ObjectId } = require('mongoose').Types
 const sessionAuth = async (req, res, next)=>{
     // const username = req.session.username
     // const id = new ObjectId(req.session.userID)
-    const username = req.cookies["universe_auth_token"].username
-    const id = new ObjectId(req.cookies["universe_auth_token"].userID)
+    const username = req.cookies["universe_auth_token"]?.username
+    const id = new ObjectId(req.cookies["universe_auth_token"]?.userID)
     req.username = username
     res.locals = req.params
     res.locals['id'] = id

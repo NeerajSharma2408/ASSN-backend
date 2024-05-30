@@ -46,7 +46,11 @@ const server = app.listen(PORT, expressAsyncHandler(async (err) => {
     }
 }));
 
-const io = SocketIo(server);
+const io = SocketIo(server,{
+    pingTimeout: 60000,
+    cors: {
+      origin: process.env.CLIENT_URL,
+    }});
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
@@ -88,7 +92,7 @@ app.use('/api/chat', sessionAuth, chatRoutes); // Chat Routes
 app.use(errorHandler)
 
 io.on('connection', async (socket) => {
-    // console.log("New User connected", ConnectedUsers);
+    console.log("New User connected");
     
     // Event handler for new user connected
     socket.on('new-user-connected', ({ userID, community, toId })=>{
@@ -97,16 +101,20 @@ io.on('connection', async (socket) => {
 
     // Event handler for getting chat heads  
     socket.on('get-chat-heads', ({userID})=>{
+        console.log("get chat heads",userID);
         getChatHeads(socket, userID, limit=15, page=1);
     })
     
     // Event handler for getting chat messages
-    socket.on('get-chat-messages', ({groupID})=>{
+    socket.on('get-chat-messages', ({userID,groupID})=>{
+        console.log("get-chat-messages",userID,groupID)
         getChatMessages(socket, userID, groupID, limit=50, page=1);
     })
 
     // Event handler for creating group
     socket.on('create-group', ({userID, memberIDs, message, Name})=>{
+        console.log("create group");
+        console.log("userID, memberIDs, message, Name",userID, memberIDs, message, Name);
         createGroup(socket, userID, memberIDs, message, Name);
     })
 
@@ -122,6 +130,8 @@ io.on('connection', async (socket) => {
 
     // Event handler for sending chat messages
     socket.on('send-message', ({message, userID, groupID, replyTo})=>{
+        console.log("send message");
+        console.log("message, userID, groupID, replyTo",message, userID, groupID, replyTo);
         sendMessage(socket, message, userID, groupID, replyTo);
     })
 
