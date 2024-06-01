@@ -10,6 +10,12 @@ async function generateIcebreakers(promtData) {
     const MODEL_NAME = "gemini-1.5-pro-latest";
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_SECRET_KEY);
     const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+    
+    const promtMessage = "You want to start some interesting conversations. You decide to use their recent social post's captions and comments as inspiration for ice breakers without addressing any emotional or personal moments. Here are some of their recent posts and their messages along with liked messages: ";
+    
+    const promtOutput = 'Generate the ice breakers in the form of array of strings.';
+    
+    const prompt = promtMessage + promtData + '. ' + promtOutput;
 
     const generationConfig = {
         temperature: 1,
@@ -64,17 +70,13 @@ async function generateIcebreakers(promtData) {
         { text: "output: " },
     ];
     
-    const promtMessage = "You want to start some interesting conversations. You decide to use their recent social post's captions and comments as inspiration for ice breakers without addressing any emotional or personal moments. Here are some of their recent posts and their messages along with liked messages: ";
-    
-    const promtOutput = 'Generate the ice breakers in the form of array of strings.';
-    
-    const prompt = promtMessage + promtData + '. ' + promtOutput;
-    
-    const result = await model.generateContent({
-        contents: [{ role: "user", parts }],
-        generationConfig,
-        safetySettings,
-    });
+    // const result = await model.generateContent({
+    //     contents: [{ role: "user", parts }],
+    //     generationConfig,
+    //     safetySettings,
+    // });
+
+    const result = await model.generateContent(prompt)
     
     const response = result.response.text();
     

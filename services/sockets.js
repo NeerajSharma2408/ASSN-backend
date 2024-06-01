@@ -208,7 +208,7 @@ const sendMessage = async (socket, message, userID, groupID, replyTo) => {
 
         let group = await Group.findById(groupID);
         if(!group){
-            createGroup(socket, userID, [userID, groupID], message);
+            group = createGroup(socket, userID, [userID, groupID], message);
             return;
         }
 
