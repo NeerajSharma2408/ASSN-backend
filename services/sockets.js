@@ -56,7 +56,7 @@ const getChatHeads = async (socket, userID, limit, page) => {
 
         const user = await User.findById(userID);
         const grpArray = user.Groups.map((group, i) => (group?.GroupID));
-        const chatHeads = await Group.find({ id: { $in: grpArray } }).skip((page - 1) * limit).limit(limit).exec();
+        const chatHeads = await Group.find({ _id: { $in: grpArray } }).skip((page - 1) * limit).limit(limit).exec();
 
         const populatedChatHeads = await populateChatHeads(chatHeads);
 
@@ -96,35 +96,43 @@ const createGroup = async (socket, createdBy, memberIDs, message, Name) => {
                 throw new Error("Invalid Member Id provided");
             }
         });
-        if (!mongoose.isObjectIdOrHexString(createdBy)) {
-            throw new Error("Invalid Created By Id provided");
-        }
-        let createdByUser = await User.findById(createdBy);
 
-        let groupObj = {
-            Members: memberIDs,
-            Name: Name ?? (memberIDs.length > 2 ? createdByUser.Username+"'s Group" : null),
-            CreatedBy: createdByUser.id,
-            isGroupChat: memberIDs.length > 2
-        }
-        let group = await Group.create(groupObj);
+        let group = await Group.findOne({ isGroupChat: false, Members: { 
+            $all: memberIDs, 
+            $size: memberIDs.length
+        } });
 
-        if(!group) throw new Error("Unable to create Group");
+        if(!group){
+            if (!mongoose.isObjectIdOrHexString(createdBy)) {
+                throw new Error("Invalid Created By Id provided");
+            }
+            let createdByUser = await User.findById(createdBy);
+    
+            let groupObj = {
+                Members: memberIDs,
+                Name: Name ?? (memberIDs.length > 2 ? createdByUser.Username+"'s Group" : null),
+                CreatedBy: createdByUser.id,
+                isGroupChat: memberIDs.length > 2
+            }
+            group = await Group.create(groupObj);
+    
+            if(!group) throw new Error("Unable to create Group");
 
-        memberIDs?.map(async (memberID)=>{
-            const user = await User.findByIdAndUpdate(memberID, { $push: {Groups: {GroupID: group.id}} });
-            const notificationDoc = await Notification.create({
-                From: createdBy,
-                To: memberID,
-                Type: 8,
-                RefObject: {
-                    RefSchema: 'GROUP',
-                    RefId: group.id
-                },
-                Message: `You have been added to a group by ${createdByUser.Username}`
+            memberIDs?.map(async (memberID)=>{
+                const user = await User.findByIdAndUpdate(memberID, { $push: {Groups: {GroupID: group.id}} });
+                const notificationDoc = await Notification.create({
+                    From: createdBy,
+                    To: memberID,
+                    Type: 8,
+                    RefObject: {
+                        RefSchema: 'GROUP',
+                        RefId: group.id
+                    },
+                    Message: `You have been added to a group by ${createdByUser.Username}`
+                });
+                socket.to(ConnectedUsers[memberID]?.socketId).emit("added-to-group", { message: "YOU HAVE BEEN ADDED TO A GROUP", group, notificationDoc });
             });
-            socket.to(ConnectedUsers[memberID]?.socketId).emit("added-to-group", { message: "YOU HAVE BEEN ADDED TO A GROUP", group, notificationDoc });
-        });
+        }
         
         if(message) sendMessage(socket, message, createdBy, group.id);
 
