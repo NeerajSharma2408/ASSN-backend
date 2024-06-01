@@ -56,7 +56,10 @@ const getCommunityUsers = expressAsyncHandler(async (req, res)=>{
 })
 
 const searchFriends = expressAsyncHandler(async (req, res) => {
-    const usernameOrName = req.params.userName
+    const usernameOrName = req.params?.userName?.toLowerCase();
+    
+    if(!usernameOrName) throw new Error("Invalid request sent");
+
     let friends = myCache.get((res.locals.id).toString())
     if (!friends) {
         friends = await Friend.find({ $and: [{ Status: 3 }, { $or: [{ 'Requester': res.locals.id }, { 'Recipient': res.locals.id }] }] })
@@ -67,7 +70,7 @@ const searchFriends = expressAsyncHandler(async (req, res) => {
         myCache.set((res.locals.id).toString(), friends, 600)
     }
     matches = friends.filter(friend => {
-        return ((friend.Username).includes(usernameOrName)) || ((friend.Name).includes(usernameOrName));
+        return ((friend?.Username?.toLowerCase()).includes(usernameOrName)) || ((friend?.Name?.toLowerCase()).includes(usernameOrName));
     })
     if (matches.length > 0)
         res.status(200).json(matches)
@@ -76,7 +79,9 @@ const searchFriends = expressAsyncHandler(async (req, res) => {
 })
 
 const searchCommunity = expressAsyncHandler(async (req, res) => {
-    const usernameOrName = req.params.userName
+    const usernameOrName = req.params?.userName?.toLowerCase() || null;
+
+    if(!usernameOrName) throw new Error("Invalid request sent");
 
     const userCommunity = await User.findById(res.locals.id).select('Community')
 
@@ -86,7 +91,7 @@ const searchCommunity = expressAsyncHandler(async (req, res) => {
         myCache.set(userCommunity.Community, communityMembers, 600)
     }
     const matches = communityMembers.filter(communityMember => {
-        return ((communityMember.Username).includes(usernameOrName)) || ((communityMember.Name).includes(usernameOrName));
+        return ((communityMember.Username.toLowerCase()).includes(usernameOrName)) || ((communityMember.Name.toLowerCase()).includes(usernameOrName));
     })
     if (matches.length > 0)
         res.status(200).json(matches)
