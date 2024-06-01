@@ -55,7 +55,7 @@ const getChatHeads = async (socket, userID, limit, page) => {
         }
 
         const user = await User.findById(userID);
-        const grpArray = user.Groups.map(({group, i}) => (group?.GroupID));
+        const grpArray = user.Groups.map((group, i) => (group?.GroupID));
         const chatHeads = await Group.find({ id: { $in: grpArray } }).skip((page - 1) * limit).limit(limit).exec();
 
         const populatedChatHeads = await populateChatHeads(chatHeads);
