@@ -32,10 +32,10 @@ const newUserConnected = async (socket, userID, community, toId) => {
 
         user?.Groups?.map((group) => {
             if (group?.hasLeftGroup) return;
-            socket.join(group.GroupID);
+            socket.join(group?.GroupID?.toString());
         })
 
-        socket.emit("commentsSeen", { message: "groups joined" });
+        socket.emit("joined-all-rooms", { message: "groups joined", Groups: user?.Groups });
     } catch (error) {
         console.log(error)
         socket.emit('error', { message: error.message });
