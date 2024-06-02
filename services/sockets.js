@@ -133,6 +133,8 @@ const createGroup = async (socket, createdBy, memberIDs, message, Name) => {
                 socket.to(ConnectedUsers[memberID]?.socketId).emit("added-to-group", { message: "YOU HAVE BEEN ADDED TO A GROUP", group, notificationDoc });
             });
         }
+
+        socket.join(group?._id?.toString());
         
         if(message) sendMessage(socket, message, createdBy, group.id);
 
