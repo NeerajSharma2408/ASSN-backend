@@ -10,9 +10,13 @@ const Notification = require("../model/Notification");
 
 const populateChatHeads = async(chatHeads) => {
     const populatedChatHeads = Promise.all(chatHeads.map(async(chatHead, i) => {
+        const messageObj = await Message.findById(chatHead?.LastUpdation?.Message);
         const populatedMembers = Promise.all(chatHead.Members.map(async(memberID) => {
             return await User.findById(memberID).select('Name Username Avatar Bio isPrivateAccount');
         }))
+        if(messageObj) {
+            chatHead.LastUpdation.Message = messageObj;
+        }
         chatHead.Members = await populatedMembers;
         return chatHead
     }))
@@ -22,7 +26,7 @@ const populateChatHeads = async(chatHeads) => {
 
 const newUserConnected = async (socket, userID, community, toId) => {
     try {
-        if (!mongoose.isValidObjectId(userID)) {
+        if (!mongoose.isObjectIdOrHexString(userID)) {
             throw new Error("Invalid User ID provided");
         }
 
@@ -204,7 +208,7 @@ const deleteGroup = async (socket, userID, groupID) => {
 
 const sendMessage = async (socket, message, userID, groupID, replyTo) => {
     try {
-        if (!mongoose.isValidObjectId(userID) || !mongoose.isValidObjectId(groupID)) {
+        if (!mongoose.isObjectIdOrHexString(userID) || !mongoose.isObjectIdOrHexString(groupID)) {
             throw new Error("Invalid User Id or Group Id or To User Id provided");
         }
 
