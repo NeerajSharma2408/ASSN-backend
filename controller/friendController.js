@@ -3,6 +3,16 @@ const expressAsyncHandler = require("express-async-handler");
 const Friend = require('../model/Friend');
 const { default: mongoose } = require("mongoose");
 const { sendRequestNotification } = require("./notificationController");
+const User = require("../model/User");
+
+const populateFriendObj = async (friends) => {
+    return Promise.all(friends.map(async (friend) => {
+        friend.Requester = await User.findById(friend.Requester).select('_id Name Username Avatar Bio isPrivateAccount');
+        friend.Recipient = await User.findById(friend.Recipient).select('_id Name Username Avatar Bio isPrivateAccount');
+
+        return friend;
+    }))
+}
 
 const getFriends = expressAsyncHandler(async (req, res) => {
     const userID = res.locals.id;
@@ -10,8 +20,10 @@ const getFriends = expressAsyncHandler(async (req, res) => {
     if(!mongoose.isValidObjectId(userID)) throw new Error("Invalid user ID");
 
     const friends = await Friend.find({ $and: [ { $or: [{ Requester: userID }, { Recipient: userID }] }, { Status: 3 } ] });
+
+    const populatedFriends = await populateFriendObj(friends);
     
-    res.status(200).json({message: "Friends Fetched", friends});
+    res.status(200).json({message: "Friends Fetched", populatedFriends});
 });
 
 const removeFriend = expressAsyncHandler(async (req, res) => {
@@ -43,8 +55,10 @@ const getRequests = expressAsyncHandler(async (req, res) => {
     if(userID && !mongoose.isValidObjectId(userID)) throw new Error("Invalid user ID");
 
     const requests = await Friend.find({ $and : [{Recipient: userID}, {Status: 1}]});
+    
+    const populatedRequests = await populateFriendObj(requests);
 
-    res.status(200).json({message: "Requests Fetched", requests});
+    res.status(200).json({message: "Requests Fetched", requests: populatedRequests});
 });
 
 const rejectRequest = expressAsyncHandler(async (req, res) => {
