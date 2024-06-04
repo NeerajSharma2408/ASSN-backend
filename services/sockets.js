@@ -249,6 +249,7 @@ const sendMessage = async (socket, message, userID, groupID, replyTo) => {
 
         // HERE CREATE A NOTIFICTAION SCHEMA ENRTY FOR MESSAGE RECEIEVED
         socket.to(groupID).emit("message-received", { message: "MESSAGE RECEIVED", messageDoc });
+        socket.emit("message-received", { message: "MESSAGE RECEIVED", messageDoc });
 
     } catch (error) {
         console.log(error);
