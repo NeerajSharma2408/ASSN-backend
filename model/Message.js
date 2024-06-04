@@ -19,8 +19,10 @@ const MessageSchema = new Schema({
             return !this.Attachment;
         }
     },
-    Attachment: {
-        type: String,
+    Attachments: {
+        type: [{
+            type: String,
+        }],
         required: function () {
             return !this.Message;
         }

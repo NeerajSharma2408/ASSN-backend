@@ -125,8 +125,8 @@ io.on('connection', async (socket) => {
     })
 
     // Event handler for sending chat messages
-    socket.on('send-message', ({message, userID, groupID, replyTo})=>{
-        sendMessage(socket, message, userID, groupID, replyTo);
+    socket.on('send-message', ({message, attachments, userID, groupID, replyTo})=>{
+        sendMessage(socket, message, attachments, userID, groupID, replyTo);
     })
 
     // Event handler for updating chat messages

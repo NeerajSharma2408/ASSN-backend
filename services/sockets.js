@@ -215,7 +215,7 @@ const deleteGroup = async (socket, userID, groupID) => {
     }
 };
 
-const sendMessage = async (socket, message, userID, groupID, replyTo) => {
+const sendMessage = async (socket, message, attachments, userID, groupID, replyTo) => {
     try {
         if (!mongoose.isObjectIdOrHexString(userID) || !mongoose.isObjectIdOrHexString(groupID)) {
             throw new Error("Invalid User Id or Group Id or To User Id provided");
@@ -236,9 +236,14 @@ const sendMessage = async (socket, message, userID, groupID, replyTo) => {
         let messageObj = {
             Sender: sender.id,
             Receiver: groupID,
-            Message: message,
             Parent: replyTo ?? null,
-            InGroup: groupID
+            InGroup: groupID,
+        }
+
+        if(message){
+            messageObj.Message = message;
+        }else{
+            messageObj.Attachment = attachments;
         }
 
         const messageDoc = await Message.create(messageObj);
