@@ -198,7 +198,6 @@ const resetpass = expressAsyncHandler(async function (req, res) {
 // })
 
 const logout=(req, res)=>{
-  console.log("logout controller")
     res.cookie("universe_auth_token","",{
       sameSite:process.env.NODE_ENV === "production" ? "none":undefined,
       secure: process.env.NODE_ENV === "production",

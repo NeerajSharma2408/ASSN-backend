@@ -68,10 +68,13 @@ const toggleReaction = expressAsyncHandler(async (req, res) => {
             switch (model) {
                 case "Post": 
                     docObj = await Post.findByIdAndUpdate(parentID, {$inc: {CommentsCount: 1}}).exec();
+                    break;
                 case "Message":
                     docObj = await Message.findByIdAndUpdate(parentID, {$inc: {CommentsCount: 1}}).exec();
+                    break;
                 case "Comment":
                     docObj = await Comment.findByIdAndUpdate(parentID, {$inc: {CommentsCount: 1}}).exec();
+                    break;
                 default: console.log("INVALID CASE")
             }
         }

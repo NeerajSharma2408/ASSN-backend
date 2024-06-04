@@ -60,7 +60,7 @@ const getChatHeads = async (socket, userID, limit, page) => {
 
         const user = await User.findById(userID);
         const grpArray = user.Groups.map((group, i) => (group?.GroupID));
-        const chatHeads = await Group.find({ _id: { $in: grpArray } }).skip((page - 1) * limit).limit(limit).exec();
+        const chatHeads = await Group.find({ _id: { $in: grpArray } }).sort({createdAt: -1}).skip((page - 1) * limit).limit(limit).exec();
 
         const populatedChatHeads = await populateChatHeads(chatHeads);
 
@@ -84,7 +84,7 @@ const getChatMessages = async (socket, userID, groupID, limit, page) => {
             throw new Error("Group doesn't Exist");
         }
 
-        const messages = await Message.find({ InGroup: groupID, isDeleted: false }).skip((page - 1) * limit).limit(limit).exec();
+        const messages = await Message.find({ InGroup: groupID, isDeleted: false }).sort({createdAt: -1}).skip((page - 1) * limit).limit(limit).exec();
 
         socket.emit("chat-messages-fetched", { message: "ALL CHAT MESSAGES FOUND", messages })
     } catch (error) {
@@ -196,10 +196,19 @@ const leaveGroup = async (socket, userID, groupID, removedBy) => {
 
 const deleteGroup = async (socket, userID, groupID) => {
     try {
+        const group = await Group.findById(groupID);
+
+        if(group?.createdBy?.toString() !== userID?.toString()){
+            throw new Error("User doesn't have delete permission")
+        }
+        group?.Members?.map((memberID) => {
+            leaveGroup(socket, memberID, groupID, userID);
+        })
         leaveGroup(socket, userID, groupID, userID);
         
         const user = await User.updateOne({id: userID, 'Groups.GroupID': groupID }, { $set : { 'Groups.$.hasDeletedGroup': true }})
 
+        socket.emit('group-deleted', { message: "Group deleted", user });
     } catch (error) {
         console.log(error)
         socket.emit('error', { message: error.message });
@@ -239,7 +248,7 @@ const sendMessage = async (socket, message, userID, groupID, replyTo) => {
         group = await Group.findByIdAndUpdate(groupID, { $set: {LastUpdation: {By: userID, Message: messageDoc.id}} });
 
         // HERE CREATE A NOTIFICTAION SCHEMA ENRTY FOR MESSAGE RECEIEVED
-        socket.broadcast.to(groupID).emit("message-received", { message: "MESSAGE RECEIVED", messageDoc });
+        socket.to(groupID).emit("message-received", { message: "MESSAGE RECEIVED", messageDoc });
 
     } catch (error) {
         console.log(error);
