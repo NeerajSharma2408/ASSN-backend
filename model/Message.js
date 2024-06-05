@@ -16,7 +16,7 @@ const MessageSchema = new Schema({
     Message: {
         type: String,
         required: function () {
-            return !this.Attachment.length;
+            return !this.Attachments.length;
         }
     },
     Attachments: {
