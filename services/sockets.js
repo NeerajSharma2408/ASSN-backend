@@ -243,7 +243,7 @@ const sendMessage = async (socket, message, attachments, userID, groupID, replyT
         if(message){
             messageObj.Message = message;
         }else{
-            messageObj.Attachment = attachments;
+            messageObj.Attachments = attachments;
         }
 
         const messageDoc = await Message.create(messageObj);
